@@ -1,17 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, OneToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, OneToMany, JoinTable, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
 export class IcecreamShop {
 
-  @PrimaryGeneratedColumn()
-  userId: number;
+  @PrimaryGeneratedColumn({type: 'int'})
+  icecreamShopId: number;
 
-  @Column()
+  @Column({type: 'varchar'})
   name: string;
 
-  @ManyToMany(type => User, user => user.icecreamShops)
-  @JoinTable()
+  @ManyToOne(type => User, user => user.icecreamShop)
   employees: User[];
 
   @OneToMany(type => User, user => user.ownedIcecreamShops)

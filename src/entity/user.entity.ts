@@ -1,31 +1,31 @@
-import { PrimaryGeneratedColumn, Column, ManyToMany, Entity, ManyToOne } from 'typeorm';
+import { PrimaryGeneratedColumn, Column, ManyToMany, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { IcecreamShop } from './icecream-shop.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({type: 'int'})
   userId: number;
 
-  @Column()
+  @Column({type: 'varchar'})
   userType: number;
 
-  @Column({unique: true})
+  @Column({type: 'varchar', unique: true})
   login: string;
 
-  @Column()
+  @Column({type: 'varchar'})
   email: string;
 
-  @Column()
+  @Column({type: 'varchar'})
   password: string;
 
-  @Column({nullable: true})
+  @Column({type: 'varchar', nullable: true})
   firstName: string;
 
-  @Column({nullable: true})
+  @Column({type: 'varchar', nullable: true})
   lastName: string;
 
-  @ManyToMany(type => IcecreamShop, icecreamShop => icecreamShop.employees)
-  icecreamShops: IcecreamShop[];
+  @OneToMany(type => IcecreamShop, icecreamShop => icecreamShop.employees)
+  icecreamShop: IcecreamShop;
 
   @ManyToOne(type => IcecreamShop, icecreamShop => icecreamShop.owner)
   ownedIcecreamShops: IcecreamShop[];
