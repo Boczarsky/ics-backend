@@ -5,9 +5,12 @@ import { User } from 'src/entity/user.entity';
 import { UserType } from 'src/enums/user-type.enum';
 import { IcecreamShop } from 'src/entity/icecream-shop.entity';
 import { UpdateUserDto } from './update-user.dto';
+import { PasswordHelper } from 'src/common/password-helper';
 
 @Injectable()
 export class UsersService {
+
+  passwordHelper = new PasswordHelper();
 
   constructor(private readonly connection: Connection) {}
 
@@ -55,8 +58,8 @@ export class UsersService {
       .forEach((key) => {
         user[key] = userData[key];
       });
-    if (userData.password && user.password === userData.oldPassword) {
-      user.password = userData.password;
+    if (userData.password && this.passwordHelper.compare(userData.oldPassword, user.password)) {
+      user.password = this.passwordHelper.hash(userData.password);
     }
     if (userData.icsId && user.icecreamShop.icecreamShopId !== userData.icsId) {
       const icecreamShop = await this.connection.getRepository(IcecreamShop).findOne({icecreamShopId: userData.icsId});
@@ -67,7 +70,13 @@ export class UsersService {
     }
     try {
       const result = await userRepositiory.manager.save(user);
-      return result;
+      const response = {};
+      Object.keys(userData)
+        .filter(filterKey => !['password', 'oldPassword'].includes(filterKey))
+        .forEach(key => {
+          response[key] = result[key];
+        });
+      return response;
     } catch (error) {
       switch (error.code) {
         default:
@@ -76,9 +85,14 @@ export class UsersService {
     }
   }
 
+  async getUser(username: string) {
+    const userRepositiory: Repository<User> = this.connection.getRepository(User);
+    return await userRepositiory.findOne({login: username});
+  }
+
   private setPrimaryUserData(newUser: User, userData: CreateUserDto) {
     newUser.login = userData.login;
-    newUser.password = userData.password;
+    newUser.password = this.passwordHelper.hash(userData.password);
     newUser.email = userData.email;
     newUser.userType = userData.userType;
   }

@@ -20,12 +20,27 @@ export class IcecreamShopsService {
     }
     newIcecreamShop.owner = owner;
     try {
-      const result = await icecreamShopRepositiory.save(newIcecreamShop);
+      const result = await icecreamShopRepositiory.manager.save(newIcecreamShop);
       return {icecreamShopId: result.icecreamShopId};
     } catch (error) {
       switch (error.code) {
         case '23505':
           throw new HttpException('Already exists.', HttpStatus.FORBIDDEN);
+        default:
+          throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      }
+    }
+  }
+
+  async getMyIcecreamShops(id: number) {
+    const userRepositiory: Repository<User> = this.connection.getRepository(User);
+    const icecreamShopRepositiory: Repository<IcecreamShop> = this.connection.getRepository(IcecreamShop);
+    try {
+      const user = await userRepositiory.findOne({userId: id});
+      const icecreamShops = await icecreamShopRepositiory.find({owner: user});
+      return icecreamShops;
+    } catch (error) {
+      switch (error.code) {
         default:
           throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
       }

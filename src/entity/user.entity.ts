@@ -1,4 +1,4 @@
-import { PrimaryGeneratedColumn, Column, ManyToMany, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { PrimaryGeneratedColumn, Column, ManyToMany, Entity, ManyToOne, OneToMany, JoinTable } from 'typeorm';
 import { IcecreamShop } from './icecream-shop.entity';
 
 @Entity()
@@ -24,10 +24,10 @@ export class User {
   @Column({type: 'varchar', nullable: true})
   lastName: string;
 
-  @OneToMany(type => IcecreamShop, icecreamShop => icecreamShop.employees)
+  @ManyToOne(type => IcecreamShop, icecreamShop => icecreamShop.employees)
   icecreamShop: IcecreamShop;
 
-  @ManyToOne(type => IcecreamShop, icecreamShop => icecreamShop.owner)
+  @OneToMany(type => IcecreamShop, icecreamShop => icecreamShop.owner)
   ownedIcecreamShops: IcecreamShop[];
 
 }

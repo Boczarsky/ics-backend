@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { IcecreamShopsService } from './icecream-shops.service';
 import { CreateIcecreamShopDto } from './create-icecream-shop.dto';
 
@@ -10,6 +10,11 @@ export class IcecreamShopsController {
   @Post()
   async createIcecreamShop(@Body() icecreamShop: CreateIcecreamShopDto) {
     return await this.icecreamShopsService.createIcecreamShop(icecreamShop);
+  }
+
+  @Get('my/:id')
+  async getMyIcecreamShops(@Param('id') id: number) {
+    return await this.icecreamShopsService.getMyIcecreamShops(id);
   }
 
 }

@@ -10,9 +10,9 @@ export class IcecreamShop {
   @Column({type: 'varchar'})
   name: string;
 
-  @ManyToOne(type => User, user => user.icecreamShop)
+  @OneToMany(type => User, user => user.icecreamShop)
   employees: User[];
 
-  @OneToMany(type => User, user => user.ownedIcecreamShops)
+  @ManyToOne(type => User, user => user.ownedIcecreamShops)
   owner: User;
 }
