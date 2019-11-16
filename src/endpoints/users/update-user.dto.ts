@@ -1,12 +1,7 @@
-import { IsEnum, IsNotEmpty, IsEmail, IsOptional, Length, ValidateIf, IsNumber } from 'class-validator';
-
+import { IsNotEmpty, IsEmail, IsOptional, Length, ValidateIf, IsNumber } from 'class-validator';
 import { UserType } from 'src/enums/user-type.enum';
 
 export class UpdateUserDto {
-
-  @IsNotEmpty()
-  @IsNumber()
-  userId: number;
 
   @IsOptional()
   @IsEmail()
@@ -29,8 +24,11 @@ export class UpdateUserDto {
   lastName: string;
 
   @IsOptional()
-  @ValidateIf(o => UserType.employee === o.userType)
-  @IsNumber()
-  icsId: number;
+  @IsNotEmpty()
+  managerId: number;
+
+  @IsOptional()
+  @IsNotEmpty()
+  userType: UserType;
 
 }

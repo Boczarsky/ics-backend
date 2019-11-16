@@ -1,10 +1,7 @@
 import { UserType } from 'src/enums/user-type.enum';
-import { IsNotEmpty, IsEnum, IsEmail, ValidateIf, IsNumber, IsOptional, Length } from 'class-validator';
+import { IsNotEmpty, IsEnum, IsEmail, IsOptional, Length } from 'class-validator';
 
 export class CreateUserDto {
-
-  @IsEnum(UserType)
-  userType: UserType;
 
   @IsNotEmpty()
   login: string;
@@ -23,8 +20,12 @@ export class CreateUserDto {
   @Length(1, 60)
   lastName: string;
 
-  @ValidateIf(o => UserType.employee === o.userType)
-  @IsNumber()
-  icsId: number;
+  @IsOptional()
+  @IsEnum(UserType)
+  userType: UserType;
+
+  @IsOptional()
+  @IsNotEmpty()
+  managerId: number;
 
 }
