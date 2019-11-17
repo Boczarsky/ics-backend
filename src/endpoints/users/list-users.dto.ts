@@ -1,16 +1,26 @@
 import { IsNumber, IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
-import { UserType } from 'src/enums/user-type.enum';
+import { UserType } from '../../enums/user-type.enum';
 
 export class ListUsersDto {
 
   @IsOptional()
-  @IsEnum(UserType)
-  user_type: number;
+  @IsEnum(UserType, {each: true})
+  user_type: number[];
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  search: string;
+  full_name: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  login: string;
 
   @IsOptional()
   @IsString()

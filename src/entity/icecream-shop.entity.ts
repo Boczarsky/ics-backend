@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinTable, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
-import { IcecreamShopUser } from './icecream-shop_user.entity';
+import { EmployeeWorkplace } from './employee_workplace.entity';
+import { FavoriteFollower } from './favorite_follower.entity';
 
 @Entity()
 export class IcecreamShop {
@@ -11,13 +12,17 @@ export class IcecreamShop {
   @Column({type: 'varchar'})
   name: string;
 
-  @OneToMany(() => IcecreamShopUser, icecreamShopUser => icecreamShopUser.icecream_shop_id)
-  employees: IcecreamShopUser[];
-
   @Column({type: 'int'})
   owner_id: number;
 
-  @ManyToOne(() => User, user => user.owned_icecream_shops)
+  @ManyToOne(() => User, user => user.icecream_shops)
   @JoinColumn({name: 'owner_id'})
   owner: User;
+
+  @OneToMany(() => EmployeeWorkplace, ew => ew.workplace)
+  employees: EmployeeWorkplace[];
+
+  @OneToMany(() => FavoriteFollower, ff => ff.favorite)
+  followers: FavoriteFollower[];
+
 }

@@ -1,6 +1,7 @@
 import { PrimaryGeneratedColumn, Column, Entity, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { IcecreamShop } from './icecream-shop.entity';
-import { IcecreamShopUser } from './icecream-shop_user.entity';
+import { EmployeeWorkplace } from './employee_workplace.entity';
+import { FavoriteFollower } from './favorite_follower.entity';
 
 @Entity()
 export class User {
@@ -28,17 +29,20 @@ export class User {
   @Column({type: 'int', nullable: true})
   manager_id: number;
 
-  @ManyToOne(() => User, manager => manager.user_id)
+  @ManyToOne(() => User, manager => manager.employees)
   @JoinColumn({name: 'manager_id'})
   manager: User;
 
-  @OneToMany(() => User, employee => employee.manager_id)
+  @OneToMany(() => User, employee => employee.manager)
   employees: User[];
 
-  @OneToMany(() => IcecreamShopUser, icecreamShopUser => icecreamShopUser.user_id)
-  workplaces: IcecreamShopUser[];
+  @OneToMany(() => EmployeeWorkplace, ew => ew.employee)
+  workplaces: EmployeeWorkplace[];
 
-  @OneToMany(() => IcecreamShop, icecreamShop => icecreamShop.owner_id)
-  owned_icecream_shops: IcecreamShop[];
+  @OneToMany(() => IcecreamShop, icecreamShop => icecreamShop.owner)
+  icecream_shops: IcecreamShop[];
+
+  @OneToMany(() => FavoriteFollower, ff => ff.follower)
+  favorites: FavoriteFollower[];
 
 }

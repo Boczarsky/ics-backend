@@ -6,7 +6,6 @@ import { UpdateUserDto } from './update-user.dto';
 import { PasswordHelper } from '../../common/password-helper';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
-import e = require('express');
 import { ListUsersDto } from './list-users.dto';
 
 @Injectable()
@@ -16,8 +15,7 @@ export class UsersService {
 
   constructor(private readonly connection: Connection) {}
 
-  async createUser(userData: CreateUserDto, creatorData: User) {
-    console.log(creatorData);
+  async createUser(userData: CreateUserDto, creatorId: number, creatorType: number) {
     const userRepositiory: Repository<User> = this.connection.getRepository(User);
     const newUser = new User();
     const login = await userRepositiory.findOne({login: userData.login});
@@ -28,14 +26,20 @@ export class UsersService {
     if (email) {
       throw new HttpException(ErrorType.emailExist, HttpStatus.FORBIDDEN);
     }
+    if (userData.firstName) {
+      newUser.first_name = userData.firstName;
+    }
+    if (userData.lastName) {
+      newUser.last_name = userData.lastName;
+    }
     newUser.login = userData.login;
     newUser.password = this.passwordHelper.hash(userData.password);
     newUser.email = userData.email;
-    if (creatorData.user_type === UserType.manager) {
-      newUser.manager_id = creatorData.user_id;
+    if (creatorType === UserType.manager) {
+      newUser.manager_id = creatorId;
       newUser.user_type = UserType.employee;
     }
-    if (creatorData.user_type === UserType.admin) {
+    if (creatorType === UserType.admin) {
       if (userData.managerId) {
         newUser.manager_id = userData.managerId;
         newUser.user_type = UserType.employee;
@@ -51,13 +55,13 @@ export class UsersService {
     }
   }
 
-  async updateUser(id: number, userData: UpdateUserDto, updaterData: User) {
+  async updateUser(id: number, userData: UpdateUserDto, updaterId: number, updaterType: number) {
     const userRepositiory: Repository<User> = this.connection.getRepository(User);
     const user = await userRepositiory.findOne({user_id: id});
     if (!user) {
       throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
     }
-    if (updaterData.user_type !== UserType.admin && ![user.user_id, user.manager_id].includes(updaterData.user_id)) {
+    if (updaterType !== UserType.admin && ![user.user_id, user.manager_id].includes(updaterId)) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
     Object.keys(userData)
@@ -69,13 +73,13 @@ export class UsersService {
       const correctOldPassword = this.passwordHelper.compare(userData.oldPassword, user.password);
       if (correctOldPassword) {
         user.password = this.passwordHelper.hash(userData.password);
-      } else if (updaterData.user_type === UserType.admin) {
+      } else if (updaterType === UserType.admin) {
         user.password = this.passwordHelper.hash(userData.password);
       } else {
         throw new HttpException(ErrorType.passwordMathFailed, HttpStatus.BAD_REQUEST);
       }
     }
-    if (updaterData.user_type === UserType.admin) {
+    if (updaterType === UserType.admin) {
       if (userData.managerId) {
         user.manager_id = userData.managerId;
       }
@@ -109,17 +113,51 @@ export class UsersService {
   }
 
   async listUsers(filters: ListUsersDto) {
-    const filterArray = [];
-    if (filters.user_type) {
-      filterArray.push();
+    const {full_name, manager, login, email, user_type, limit, offset} = filters;
+    const where = [];
+    if (user_type) {
+      where.push(`user_type IN (${user_type.join(',')})`);
     }
-    if (filters.search) {
-      filterArray.push();
+    if (full_name) {
+      where.push(`lower(full_name) LIKE '%${full_name.toLowerCase()}%'`);
     }
-    const query = `SELECT u1.user_id, u1.login, u1.email, u1.first_name, u1.last_name, u2.email as "manager"
-    FROM "user" u1
-    LEFT JOIN "user" u2 ON u1.manager_id = u2.user_id
-    WHERE lower(concat(u1.login, ' ', u1.email, ' ', u1.first_name, ' ', u1.last_name)) LIKE '%:search%'`;
+    if (manager) {
+      where.push(`lower(manager) LIKE '%${manager.toLowerCase()}%'`);
+    }
+    if (login) {
+      where.push(`lower(login) LIKE '%${login.toLowerCase()}%'`);
+    }
+    if (email) {
+      where.push(`lower(email) LIKE '%${email.toLowerCase()}%'`);
+    }
+    const whereString = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+    const query = `
+      SELECT
+      (SELECT COUNT(*) FROM search_user ${whereString}) as total,
+      * FROM search_user ${whereString}
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
+    try {
+      const queryResult = await this.connection.query(query);
+      return queryResult.reduce((prev, curr) => {
+        const {total, ...result} = curr;
+        if (!prev.total) {
+          prev.total = total;
+        }
+        prev.result.push(result);
+        return prev;
+      }, { result: [], total: 0 });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async listEmployees(userId: number) {
+    return await this.connection.getRepository(User).find({
+      where: {manager_id: userId},
+      select: ['user_id', 'login', 'email', 'first_name', 'last_name'],
+    });
   }
 
 }

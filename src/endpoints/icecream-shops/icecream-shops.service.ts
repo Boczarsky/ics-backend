@@ -1,18 +1,36 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { Connection, Repository } from 'typeorm';
+import { Connection } from 'typeorm';
 import { CreateIcecreamShopDto } from './create-icecream-shop.dto';
 import { IcecreamShop } from '../../entity/icecream-shop.entity';
+import { UserType } from '../../enums/user-type.enum';
+import { ErrorType } from '../../enums/error-type.enum';
+import { FavoriteFollower } from '../../entity/favorite_follower.entity';
 
 @Injectable()
 export class IcecreamShopsService {
 
   constructor(private readonly connection: Connection) {}
 
-  async createIcecreamShop(id: number, icecreamShopData: CreateIcecreamShopDto) {
-    const icecreamShopRepositiory: Repository<IcecreamShop> = this.connection.getRepository(IcecreamShop);
+  async getIcecreamShop(icecreamShopId: number, userId: number, userType: UserType) {
+    const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
+    return await icecreamShopRepositiory.findOne({
+      where: {icecream_shop_id: icecreamShopId},
+      relations: ['followers'],
+    });
+  }
+
+  async createIcecreamShop(ownerId: number, user_type: UserType, icecreamShopData: CreateIcecreamShopDto) {
+    const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     const newIcecreamShop = new IcecreamShop();
     newIcecreamShop.name = icecreamShopData.name;
-    newIcecreamShop.owner_id = id;
+    if (user_type === UserType.admin) {
+      if (!icecreamShopData.owner_id) {
+        throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
+      }
+      newIcecreamShop.owner_id = icecreamShopData.owner_id;
+    } else {
+      newIcecreamShop.owner_id = ownerId;
+    }
     try {
       const result = await icecreamShopRepositiory.manager.save(newIcecreamShop);
       return {icecreamShopId: result.icecream_shop_id};
@@ -21,11 +39,34 @@ export class IcecreamShopsService {
     }
   }
 
-  async getMyIcecreamShops(id: number) {
-    const icecreamShopRepositiory: Repository<IcecreamShop> = this.connection.getRepository(IcecreamShop);
+  async getMyIcecreamShops(ownerId: number) {
+    const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     try {
-      const icecreamShops = await icecreamShopRepositiory.find({owner_id: id});
-      return icecreamShops;
+      return await icecreamShopRepositiory.find({owner_id: ownerId});
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async addToFavorites(userId: number, icecreamShopId: number) {
+    const favoriteFollowerRepository = this.connection.getRepository(FavoriteFollower);
+    const favoriteFollower = new FavoriteFollower();
+    favoriteFollower.user_id = userId;
+    favoriteFollower.icecream_shop_id = icecreamShopId;
+    try {
+      await favoriteFollowerRepository.manager.save(favoriteFollower);
+      return {};
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async removeFromFavorites(userId: number, icecreamShopId: number) {
+    const favoriteShopRepository = this.connection.getRepository(FavoriteFollower);
+    try {
+      const favorite = await favoriteShopRepository.findOne({user_id: userId, icecream_shop_id: icecreamShopId});
+      favoriteShopRepository.manager.remove(favorite);
+      return {};
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

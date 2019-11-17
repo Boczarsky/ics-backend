@@ -3,7 +3,7 @@ import { User } from './user.entity';
 import { IcecreamShop } from './icecream-shop.entity';
 
 @Entity()
-export class IcecreamShopUser {
+export class EmployeeWorkplace {
 
   @PrimaryColumn({type: 'int'})
   icecream_shop_id: number;
@@ -11,11 +11,11 @@ export class IcecreamShopUser {
   @PrimaryColumn({type: 'int'})
   user_id: number;
 
-  @ManyToOne(() => User, user => user.user_id)
+  @ManyToOne(() => User, user => user.workplaces)
   @JoinColumn({name: 'user_id'})
   employee: User;
 
-  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.icecream_shop_id)
+  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.employees)
   @JoinColumn({name: 'icecream_shop_id'})
   workplace: IcecreamShop;
 }
