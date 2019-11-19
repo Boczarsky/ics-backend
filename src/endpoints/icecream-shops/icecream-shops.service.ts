@@ -4,7 +4,7 @@ import { CreateIcecreamShopDto } from './create-icecream-shop.dto';
 import { IcecreamShop } from '../../entity/icecream-shop.entity';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
-import { FavoriteFollower } from '../../entity/favorite_follower.entity';
+import { Follower } from '../../entity/follower.entity';
 
 @Injectable()
 export class IcecreamShopsService {
@@ -49,8 +49,8 @@ export class IcecreamShopsService {
   }
 
   async addToFavorites(userId: number, icecreamShopId: number) {
-    const favoriteFollowerRepository = this.connection.getRepository(FavoriteFollower);
-    const favoriteFollower = new FavoriteFollower();
+    const favoriteFollowerRepository = this.connection.getRepository(Follower);
+    const favoriteFollower = new Follower();
     favoriteFollower.user_id = userId;
     favoriteFollower.icecream_shop_id = icecreamShopId;
     try {
@@ -62,7 +62,7 @@ export class IcecreamShopsService {
   }
 
   async removeFromFavorites(userId: number, icecreamShopId: number) {
-    const favoriteShopRepository = this.connection.getRepository(FavoriteFollower);
+    const favoriteShopRepository = this.connection.getRepository(Follower);
     try {
       const favorite = await favoriteShopRepository.findOne({user_id: userId, icecream_shop_id: icecreamShopId});
       favoriteShopRepository.manager.remove(favorite);

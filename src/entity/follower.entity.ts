@@ -3,9 +3,11 @@ import { IcecreamShop } from './icecream-shop.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class FavoriteFollower {
+export class Follower {
+
   @PrimaryColumn()
   user_id: number;
+
   @PrimaryColumn()
   icecream_shop_id: number;
 
