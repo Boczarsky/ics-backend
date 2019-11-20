@@ -15,6 +15,9 @@ export class ReportComment {
   user_id: number;
 
   @Column()
+  created_at: string;
+
+  @Column()
   content: string;
 
   @ManyToOne(() => Report, report => report.comments)

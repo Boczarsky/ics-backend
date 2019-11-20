@@ -15,6 +15,9 @@ export class PostComment {
   user_id: number;
 
   @Column()
+  created_at: string;
+
+  @Column()
   content: string;
 
   @ManyToOne(() => Post, post => post.comments)

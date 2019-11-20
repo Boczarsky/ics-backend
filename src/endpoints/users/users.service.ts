@@ -1,12 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { CreateUserDto } from './create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { Connection, Repository } from 'typeorm';
 import { User } from '../../entity/user.entity';
-import { UpdateUserDto } from './update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordHelper } from '../../common/password-helper';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
-import { ListUsersDto } from './list-users.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 
 @Injectable()
 export class UsersService {

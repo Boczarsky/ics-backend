@@ -1,5 +1,5 @@
 import { IsNumber, IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
-import { UserType } from '../../enums/user-type.enum';
+import { UserType } from '../../../enums/user-type.enum';
 
 export class ListUsersDto {
 

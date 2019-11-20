@@ -1,8 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { OpinionComment } from './opinion_comment.entity';
 import { User } from './user.entity';
+import { OpinionComment } from './opinion_comment.entity';
+import { IcecreamShop } from './icecream-shop.entity';
 
-Entity();
+@Entity()
 export class Opinion {
 
   @PrimaryGeneratedColumn()
@@ -12,13 +13,23 @@ export class Opinion {
   user_id: number;
 
   @Column()
+  icecream_shop_id: number;
+
+  @Column()
+  created_at: string;
+
+  @Column()
   content: string;
 
-  @OneToMany(() => OpinionComment, opinionComment => opinionComment)
+  @OneToMany(() => OpinionComment, opinionComment => opinionComment.opinion)
   comments: OpinionComment[];
 
   @ManyToOne(() => User, user => user.opinions)
   @JoinColumn({name: 'user_id'})
   user: User;
+
+  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.opinions)
+  @JoinColumn({name: 'icecream_shop_id'})
+  icecream_shop: IcecreamShop;
 
 }

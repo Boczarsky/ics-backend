@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Connection } from 'typeorm';
-import { CreateIcecreamShopDto } from './create-icecream-shop.dto';
+import { CreateIcecreamShopDto } from './dto/create-icecream-shop.dto';
 import { IcecreamShop } from '../../entity/icecream-shop.entity';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
@@ -15,7 +15,7 @@ export class IcecreamShopsService {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     return await icecreamShopRepositiory.findOne({
       where: {icecream_shop_id: icecreamShopId},
-      relations: ['followers'],
+      relations: ['followers', 'opinions', 'posts'],
     });
   }
 
@@ -23,6 +23,16 @@ export class IcecreamShopsService {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     const newIcecreamShop = new IcecreamShop();
     newIcecreamShop.name = icecreamShopData.name;
+    newIcecreamShop.city = icecreamShopData.city;
+    newIcecreamShop.street = icecreamShopData.street;
+    newIcecreamShop.description = icecreamShopData.description;
+    newIcecreamShop.postal_code = icecreamShopData.postal_code;
+    if (icecreamShopData.logo_id) {
+      newIcecreamShop.logo_id = icecreamShopData.logo_id;
+    }
+    if (icecreamShopData.photo_id) {
+      newIcecreamShop.photo_id = icecreamShopData.photo_id;
+    }
     if (user_type === UserType.admin) {
       if (!icecreamShopData.owner_id) {
         throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);

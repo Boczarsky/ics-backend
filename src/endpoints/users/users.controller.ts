@@ -1,9 +1,9 @@
 import { Controller, Post, Body, Patch, Request, UseGuards, Param, Get, HttpException, HttpStatus } from '@nestjs/common';
-import { CreateUserDto } from './create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ListUsersDto } from './list-users.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
 

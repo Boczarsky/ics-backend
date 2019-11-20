@@ -14,6 +14,9 @@ export class Post {
   icecream_shop_id: number;
 
   @Column()
+  created_at: string;
+
+  @Column()
   content: string;
 
   @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.posts)

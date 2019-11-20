@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, UseGuards, Request, HttpException, HttpStatus, Param, Delete } from '@nestjs/common';
 import { IcecreamShopsService } from './icecream-shops.service';
-import { CreateIcecreamShopDto } from './create-icecream-shop.dto';
+import { CreateIcecreamShopDto } from './dto/create-icecream-shop.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';

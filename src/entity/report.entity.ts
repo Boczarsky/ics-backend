@@ -12,6 +12,9 @@ export class Report {
   user_id: number;
 
   @Column()
+  created_at: string;
+
+  @Column()
   description: string;
 
   @Column()

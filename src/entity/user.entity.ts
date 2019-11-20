@@ -11,28 +11,28 @@ import { ReportComment } from './report_comment.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn({type: 'int'})
+  @PrimaryGeneratedColumn()
   user_id: number;
 
-  @Column({type: 'int', nullable: true})
+  @Column({nullable: true})
   manager_id: number;
 
-  @Column({type: 'int'})
+  @Column()
   user_type: number;
 
-  @Column({type: 'varchar', unique: true})
+  @Column({unique: true})
   login: string;
 
-  @Column({type: 'varchar', unique: true})
+  @Column({unique: true})
   email: string;
 
-  @Column({type: 'varchar'})
+  @Column()
   password: string;
 
-  @Column({type: 'varchar', nullable: true})
+  @Column({nullable: true})
   first_name: string;
 
-  @Column({type: 'varchar', nullable: true})
+  @Column({nullable: true})
   last_name: string;
 
   @ManyToOne(() => User, manager => manager.employees)
