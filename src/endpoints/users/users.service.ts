@@ -2,7 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Connection, Repository } from 'typeorm';
 import { User } from '../../entity/user.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { EditUserDto } from './dto/edit-user.dto';
 import { PasswordHelper } from '../../common/password-helper';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
@@ -15,8 +15,8 @@ export class UsersService {
 
   constructor(private readonly connection: Connection) {}
 
-  async createUser(userData: CreateUserDto, creatorId: number, creatorType: number) {
-    const userRepositiory: Repository<User> = this.connection.getRepository(User);
+  async createUser(userData: CreateUserDto) {
+    const userRepositiory = this.connection.getRepository(User);
     const newUser = new User();
     const login = await userRepositiory.findOne({login: userData.login});
     if (login) {
@@ -35,18 +35,10 @@ export class UsersService {
     newUser.login = userData.login;
     newUser.password = this.passwordHelper.hash(userData.password);
     newUser.email = userData.email;
-    if (creatorType === UserType.manager) {
-      newUser.manager_id = creatorId;
-      newUser.user_type = UserType.employee;
+    if (userData.managerId) {
+      newUser.manager_id = userData.managerId;
     }
-    if (creatorType === UserType.admin) {
-      if (userData.managerId) {
-        newUser.manager_id = userData.managerId;
-        newUser.user_type = UserType.employee;
-      } else {
-        newUser.user_type = userData.userType ? userData.userType : UserType.client;
-      }
-    }
+    newUser.user_type = userData.userType;
     try {
       const result = await userRepositiory.manager.save(newUser);
       return {userId: result.user_id};
@@ -55,40 +47,33 @@ export class UsersService {
     }
   }
 
-  async updateUser(id: number, userData: UpdateUserDto, updaterId: number, updaterType: number) {
-    const userRepositiory: Repository<User> = this.connection.getRepository(User);
-    const user = await userRepositiory.findOne({user_id: id});
+  async updateUser(userData: EditUserDto) {
+    const userRepositiory = this.connection.getRepository(User);
+    const user = await userRepositiory.findOne({user_id: userData.user_id});
     if (!user) {
       throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
     }
-    if (updaterType !== UserType.admin && ![user.user_id, user.manager_id].includes(updaterId)) {
-      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
-    }
-    Object.keys(userData)
-      .filter((key) => !['userId', 'email', 'oldPassword', 'password', 'userType'].includes(key))
-      .forEach((key) => {
-        user[key] = userData[key];
-      });
     if (userData.password) {
-      const correctOldPassword = this.passwordHelper.compare(userData.oldPassword, user.password);
-      if (correctOldPassword) {
-        user.password = this.passwordHelper.hash(userData.password);
-      } else if (updaterType === UserType.admin) {
-        user.password = this.passwordHelper.hash(userData.password);
-      } else {
-        throw new HttpException(ErrorType.passwordMathFailed, HttpStatus.BAD_REQUEST);
-      }
+      user.password = this.passwordHelper.hash(userData.password);
     }
-    if (updaterType === UserType.admin) {
-      if (userData.managerId) {
-        user.manager_id = userData.managerId;
-      }
+    if (userData.managerId) {
+      user.manager_id = userData.managerId;
+    }
+    if (userData.userType) {
+      user.user_type = userData.userType;
     }
     if (userData.email) {
       const email = await userRepositiory.findOne({email: userData.email});
       if (email) {
         throw new HttpException(ErrorType.emailExist, HttpStatus.FORBIDDEN);
       }
+      user.email = userData.email;
+    }
+    if (userData.firstName) {
+      user.first_name = userData.firstName;
+    }
+    if (userData.lastName) {
+      user.last_name = userData.lastName;
     }
     try {
       const result = await userRepositiory.manager.save(user);
@@ -99,17 +84,13 @@ export class UsersService {
     }
   }
 
-  async getUser(userId: number, userData: User) {
-    const userRepositiory: Repository<User> = this.connection.getRepository(User);
+  async getUser(userId: number) {
+    const userRepositiory = this.connection.getRepository(User);
     const user = await userRepositiory.findOne({user_id: userId});
     if (!user) {
       throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
     }
-    if (userData.user_type === UserType.admin || [user.user_id, user.manager_id].includes(userData.user_id)) {
-      return user;
-    } else {
-      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
-    }
+    return user;
   }
 
   async listUsers(filters: ListUsersDto) {
