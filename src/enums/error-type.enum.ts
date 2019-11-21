@@ -2,6 +2,7 @@ export enum ErrorType {
   loginExist = 'LoginExist',
   emailExist = 'EmailExist',
   userNotFound = 'UserNotFound',
-  passwordMathFailed = 'PasswordMatchFailed',
+  passwordMatchFailed = 'PasswordMatchFailed',
   accessDenied = 'AccessDenied',
+  notFound = 'NotFound',
 }

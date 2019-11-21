@@ -11,7 +11,7 @@ export class Employment {
   @PrimaryColumn({type: 'int'})
   user_id: number;
 
-  @ManyToOne(() => User, user => user.workplaces)
+  @ManyToOne(() => User, user => user.workplaces, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'user_id'})
   employee: User;
 

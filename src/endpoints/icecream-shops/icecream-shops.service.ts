@@ -5,6 +5,12 @@ import { IcecreamShop } from '../../entity/icecream-shop.entity';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
 import { Follower } from '../../entity/follower.entity';
+import { ListMyIcecreamShopsDto } from './dto/list-my-icecream-shops';
+import { ListIcecreamShopsDto } from './dto/list-icecream-shops.dto';
+import { EditIcecreamShopDto } from './dto/edit-icecream-shop.dto';
+import { Employment } from 'src/entity/employment.entity';
+import { Localization } from 'src/entity/localization.entity';
+import { ListFavoriteIcecreamShopDto } from './dto/list-favorite-icecream-shop.dto';
 
 @Injectable()
 export class IcecreamShopsService {
@@ -15,7 +21,7 @@ export class IcecreamShopsService {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     return await icecreamShopRepositiory.findOne({
       where: {icecream_shop_id: icecreamShopId},
-      relations: ['followers', 'opinions', 'posts'],
+      relations: ['followers', 'opinions', 'posts', 'flavours'],
     });
   }
 
@@ -49,34 +55,232 @@ export class IcecreamShopsService {
     }
   }
 
-  async getMyIcecreamShops(ownerId: number) {
-    const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
+  async listMyIcecreamShops(ownerId: number, filters: ListMyIcecreamShopsDto) {
+    const { limit, offset, name, city, hashtags } = filters;
+    const where = [];
+    if (name) {
+      where.push(`lower(name) LIKE '%${name}%'`);
+    }
+    if (city) {
+      where.push(`lower(city) LIKE '%${city}%'`);
+    }
+    if (hashtags && hashtags.length) {
+      const quoted = hashtags.map(hashtag => `'${hashtag}'`);
+      where.push(`hashtag IN (${quoted.join(',')})`);
+    }
+    const whereString = where.length ? `WHERE owner_id = ${ownerId} AND ${where.join(' AND ')}` : `WHERE owner_id = ${ownerId}`;
+    const query = `
+    WITH count_ics AS (SELECT DISTINCT icecream_shop_id FROM icecream_shop_search ${whereString})
+    SELECT
+      (select count(*) as count FROM count_ics) as total,
+      icecream_shop_id,
+      owner_id,
+      name,
+      city,
+      street,
+      postal_code,
+      longitude,
+      latitude,
+      logo_id,
+      json_agg(hashtag) as "hashtags"
+    FROM icecream_shop_search ${whereString}
+    GROUP BY
+      icecream_shop_id,
+      owner_id,
+      name,
+      city,
+      street,
+      postal_code,
+      longitude,
+      latitude,
+      logo_id
+    LIMIT ${limit}
+    OFFSET ${offset}
+    `;
     try {
-      return await icecreamShopRepositiory.find({owner_id: ownerId});
+      const queryResult = await this.connection.query(query);
+      return queryResult.reduce((prev, curr) => {
+        const {total, ...result} = curr;
+        if (!prev.total) {
+          prev.total = total;
+        }
+        prev.result.push(result);
+        return prev;
+      }, { result: [], total: 0 });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async addToFavorites(userId: number, icecreamShopId: number) {
-    const favoriteFollowerRepository = this.connection.getRepository(Follower);
-    const favoriteFollower = new Follower();
-    favoriteFollower.user_id = userId;
-    favoriteFollower.icecream_shop_id = icecreamShopId;
+  async listIcecreamShops(filters: ListIcecreamShopsDto) {
+    const { limit, offset, name, city, hashtags, localization } = filters;
+    const where = [];
+    if (name) {
+      where.push(`lower(name) LIKE '%${name}%'`);
+    }
+    if (city) {
+      where.push(`lower(city) LIKE '%${city}%'`);
+    }
+    if (hashtags && hashtags.length) {
+      const quoted = hashtags.map(hashtag => `'${hashtag}'`);
+      where.push(`hashtag IN (${quoted.join(',')})`);
+    }
+    const whereString = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    const query = `
+    WITH count_ics AS (SELECT DISTINCT icecream_shop_id FROM icecream_shop_search ${whereString})
+    SELECT
+      (select count(*) as count FROM count_ics) as total,
+      icecream_shop_id,
+      owner_id,
+      name,
+      city,
+      street,
+      postal_code,
+      longitude,
+      latitude,
+      logo_id,
+      json_agg(hashtag) as "hashtags"
+    FROM icecream_shop_search ${whereString}
+    GROUP BY
+      icecream_shop_id,
+      owner_id,
+      name,
+      city,
+      street,
+      postal_code,
+      longitude,
+      latitude,
+      logo_id
+    LIMIT ${limit}
+    OFFSET ${offset}
+    `;
     try {
-      await favoriteFollowerRepository.manager.save(favoriteFollower);
-      return {};
+      const queryResult = await this.connection.query(query);
+      return queryResult.reduce((prev, curr) => {
+        const {total, ...result} = curr;
+        if (!prev.total) {
+          prev.total = total;
+        }
+        prev.result.push(result);
+        return prev;
+      }, { result: [], total: 0 });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async removeFromFavorites(userId: number, icecreamShopId: number) {
-    const favoriteShopRepository = this.connection.getRepository(Follower);
+  async addToFavorite(userId: number, icecreamShopId: number) {
+    const followerRepository = this.connection.getRepository(Follower);
+    const follower = new Follower();
+    follower.user_id = userId;
+    follower.icecream_shop_id = icecreamShopId;
     try {
-      const favorite = await favoriteShopRepository.findOne({user_id: userId, icecream_shop_id: icecreamShopId});
-      favoriteShopRepository.manager.remove(favorite);
-      return {};
+      return await followerRepository.manager.save(follower);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async removeFromFavorite(userId: number, icecreamShopId: number) {
+    const followerRepository = this.connection.getRepository(Follower);
+    const favorite = await followerRepository.findOne({user_id: userId, icecream_shop_id: icecreamShopId});
+    if (!favorite) {
+      throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
+    }
+    try {
+      return await followerRepository.manager.remove(favorite);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async editIcecreamShop(userId: number, userType: UserType, editData: EditIcecreamShopDto) {
+    const { name, city, street, postal_code, description, icecreamShopId, logo_id, photo_id, localization } = editData;
+    const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
+    const employmentRepository = this.connection.getRepository(Employment);
+    const localizationRepository = this.connection.getRepository(Localization);
+    const icecreamShop = await icecreamShopRepository.findOne({ icecream_shop_id: icecreamShopId });
+    if (!icecreamShop) {
+      throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
+    }
+    if (userType === UserType.manager && icecreamShop.owner_id !== userId) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    if (userType === UserType.employee) {
+      const employee = await employmentRepository.findOne({icecream_shop_id: icecreamShopId, user_id: userId});
+      if (!employee) {
+        throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+      }
+    }
+    if (name) {
+      icecreamShop.name = name;
+    }
+    if (city) {
+      icecreamShop.city = city;
+    }
+    if (street) {
+      icecreamShop.street = street;
+    }
+    if (postal_code) {
+      icecreamShop.postal_code = postal_code;
+    }
+    if (description) {
+      icecreamShop.description = description;
+    }
+    if (logo_id) {
+      // FILES NEEDED
+    }
+    if (photo_id) {
+      // FILES NEEDED
+    }
+    if (localization) {
+      const currentLocalization = await localizationRepository.findOne({icecream_shop_id: icecreamShopId});
+      if (currentLocalization) {
+        currentLocalization.latitude = localization.latitude;
+        currentLocalization.longitude = localization.longitude;
+        icecreamShop.localization = currentLocalization;
+      } else {
+        const newLocalization = new Localization();
+        newLocalization.icecream_shop_id = icecreamShopId;
+        newLocalization.latitude = localization.latitude;
+        newLocalization.longitude = localization.longitude;
+        icecreamShop.localization = newLocalization;
+      }
+    }
+  }
+
+  async listFavoriteIcecreamShops(userId: number, filters: ListFavoriteIcecreamShopDto) {
+    const { limit, offset } = filters;
+    const query = `
+    WITH count_ics AS (SELECT DISTINCT "user_id", "icecream_shop_id" FROM "follower" WHERE "user_id" = ${userId})
+    SELECT
+      (select count(*) as count FROM count_ics) as "total",
+      "ics"."icecream_shop_id",
+      "ics"."owner_id",
+      "ics"."name",
+      "ics"."city",
+      "ics"."street",
+      "ics"."postal_code",
+      "l"."longitude",
+      "l"."latitude",
+      "ics"."logo_id"
+    FROM "follower" "f"
+    LEFT JOIN "icecream_shop" "ics" ON "f"."icecream_shop_id" = "ics"."icecream_shop_id"
+    LEFT JOIN "localization" "l" ON "ics"."icecream_shop_id" = "l"."icecream_shop_id"
+    WHERE "f"."user_id" = ${userId}
+    LIMIT ${limit}
+    OFFSET ${offset}
+    `;
+    try {
+      const queryResult = await this.connection.query(query);
+      return queryResult.reduce((prev, curr) => {
+        const {total, ...result} = curr;
+        if (!prev.total) {
+          prev.total = total;
+        }
+        prev.result.push(result);
+        return prev;
+      }, { result: [], total: 0 });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

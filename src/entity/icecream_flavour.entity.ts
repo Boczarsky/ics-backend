@@ -19,7 +19,7 @@ export class IcecreamFlavour {
   composition: string;
 
   @Column()
-  status: string;
+  status: number;
 
   @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.flavours)
   @JoinColumn({name: 'icecream_shop_id'})

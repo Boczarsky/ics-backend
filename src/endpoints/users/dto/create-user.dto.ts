@@ -1,4 +1,4 @@
-import { UserType } from 'src/enums/user-type.enum';
+import { UserType } from '../../../enums/user-type.enum';
 import { IsNotEmpty, IsEnum, IsEmail, IsOptional, Length, ValidateIf } from 'class-validator';
 
 export class CreateUserDto {

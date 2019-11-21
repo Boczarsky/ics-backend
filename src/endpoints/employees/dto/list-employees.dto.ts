@@ -5,11 +5,15 @@ export class ListEmployeesDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  full_name: string;
+  fullName: string;
 
   @IsOptional()
   @IsNumber({}, {each: true})
-  icecream_shops: number[];
+  workplaces: number[];
+
+  @IsOptional()
+  @IsNotEmpty()
+  workplaceName: string;
 
   @IsOptional()
   @IsString()

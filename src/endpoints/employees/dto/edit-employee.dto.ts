@@ -11,6 +11,10 @@ export class EditEmployeeDto {
   password: string;
 
   @IsOptional()
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @IsOptional()
   @Length(1, 20)
   firstName: string;
 

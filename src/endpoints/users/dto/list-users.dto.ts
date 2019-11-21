@@ -5,12 +5,12 @@ export class ListUsersDto {
 
   @IsOptional()
   @IsEnum(UserType, {each: true})
-  user_type: number[];
+  userType: number[];
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  full_name: string;
+  fullName: string;
 
   @IsOptional()
   @IsString()

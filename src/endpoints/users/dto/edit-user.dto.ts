@@ -1,11 +1,15 @@
 import { IsNotEmpty, IsEmail, IsOptional, Length, ValidateIf, IsNumber } from 'class-validator';
-import { UserType } from 'src/enums/user-type.enum';
+import { UserType } from '../../../enums/user-type.enum';
 
 export class EditUserDto {
 
   @IsNotEmpty()
   @IsNumber()
-  user_id: number;
+  userId: number;
+
+  @IsOptional()
+  @IsNotEmpty()
+  login: string;
 
   @IsOptional()
   @IsEmail()

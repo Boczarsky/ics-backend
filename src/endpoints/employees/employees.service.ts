@@ -1,12 +1,13 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Connection } from 'typeorm';
-import { ListEmployeesDto } from './dto/list_employees.dto';
-import { CreateEmployeeDto } from './dto/create_employee.dto';
-import { User } from 'src/entity/user.entity';
-import { UserType } from 'src/enums/user-type.enum';
-import { PasswordHelper } from 'src/common/password-helper';
-import { ErrorType } from 'src/enums/error-type.enum';
-import { EditEmployeeDto } from './dto/edit_employee.dto';
+import { ListEmployeesDto } from './dto/list-employees.dto';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { User } from '../../entity/user.entity';
+import { UserType } from '../../enums/user-type.enum';
+import { PasswordHelper } from '../../common/password-helper';
+import { ErrorType } from '../../enums/error-type.enum';
+import { EditEmployeeDto } from './dto/edit-employee.dto';
+import { DeleteEmployeeDto } from './dto/delete-employee.dto';
 
 @Injectable()
 export class EmployeesService {
@@ -16,10 +17,10 @@ export class EmployeesService {
   constructor(private readonly connection: Connection) {}
 
   async listEmployees(manager_id: number, filters: ListEmployeesDto) {
-    const {full_name, login, email, icecream_shops, limit, offset} = filters;
+    const {fullName, login, email, workplaces, workplaceName, limit, offset} = filters;
     const where = [];
-    if (full_name) {
-      where.push(`lower(full_name) LIKE '%${full_name.toLowerCase()}%'`);
+    if (fullName) {
+      where.push(`lower(full_name) LIKE '%${fullName.toLowerCase()}%'`);
     }
     if (login) {
       where.push(`lower(login) LIKE '%${login.toLowerCase()}%'`);
@@ -27,19 +28,32 @@ export class EmployeesService {
     if (email) {
       where.push(`lower(email) LIKE '%${email.toLowerCase()}%'`);
     }
-    if (icecream_shops) {
-      where.push(`icecream_shop_id IN (${icecream_shops.join(',')})`);
+    if (workplaces && workplaces.length) {
+      where.push(`workplace_id IN (${workplaces.join(',')})`);
     }
-    const whereString = where.length ? `WHERE manager_id = '${manager_id}' AND ` + where.join(' AND ') : '';
+    if (workplaceName) {
+      where.push(`lower(workplace_name) LIKE '%${workplaceName}%'`);
+    }
+    const whereString = where.length ? `WHERE manager_id = '${manager_id}' AND ` + where.join(' AND ') : `WHERE manager_id = '${manager_id}'`;
     const query = `
-      SELECT DISTINCT
-        (SELECT COUNT(*) FROM search_user ${whereString}) as total,
-        full_name,
+      WITH count_employee AS (SELECT DISTINCT user_id, manager_id FROM employee ${whereString})
+      SELECT
+        (select count(*) as count FROM count_employee) as total,
+        user_id,
+        first_name,
+        last_name,
         login,
         email,
-        workplaces,
-        user_id
-        FROM search_employee ${whereString}
+        full_name,
+        json_agg(json_build_object('name', "workplace_name", 'id' , "workplace_id")) AS workplaces
+        FROM employee ${whereString}
+      GROUP BY
+        user_id,
+        first_name,
+        last_name,
+        login,
+        email,
+        full_name
       LIMIT ${limit}
       OFFSET ${offset}
     `;
@@ -58,7 +72,7 @@ export class EmployeesService {
     }
   }
 
-  async createEmployee(manager_id: number, employeeData: CreateEmployeeDto) {
+  async createEmployee(managerId: number, employeeData: CreateEmployeeDto) {
     const userRepository = this.connection.getRepository(User);
     const user = await userRepository.findOne({login: employeeData.login});
     if (user) {
@@ -72,7 +86,7 @@ export class EmployeesService {
     newEmployee.login = employeeData.login;
     newEmployee.email = employeeData.email;
     newEmployee.user_type = UserType.employee;
-    newEmployee.manager_id = manager_id;
+    newEmployee.manager_id = managerId;
     newEmployee.password = this.passwordHelper.hash(employeeData.password);
     if (employeeData.firstName) {
       newEmployee.first_name = employeeData.firstName;
@@ -88,10 +102,13 @@ export class EmployeesService {
     }
   }
 
-  async editEmployee(manager_id: number, employeeData: EditEmployeeDto) {
+  async editEmployee(managerId: number, employeeData: EditEmployeeDto) {
     const userRepository = this.connection.getRepository(User);
-    const employee = await userRepository.findOne({user_id: employeeData.user_id, manager_id});
-    employee.password = this.passwordHelper.hash(employeeData.password);
+    let employee: User;
+    employee = await userRepository.findOne({user_id: employeeData.user_id, manager_id: managerId});
+    if (employeeData.password) {
+      employee.password = this.passwordHelper.hash(employeeData.password);
+    }
     if (employeeData.firstName) {
       employee.first_name = employeeData.firstName;
     }
@@ -104,6 +121,21 @@ export class EmployeesService {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async deleteEmployee(managerId: number, employeeData: DeleteEmployeeDto) {
+    const userRepository = this.connection.getRepository(User);
+    const user = await userRepository.findOne({user_id: employeeData.userId, manager_id: managerId});
+    if (user) {
+      try {
+        const result = await userRepository.remove(user);
+        const { password, ...response } = result;
+        return response;
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      }
+    }
+    throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
   }
 
 }

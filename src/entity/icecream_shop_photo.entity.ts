@@ -1,10 +1,13 @@
-import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { IcecreamShop } from './icecream-shop.entity';
 
 @Entity()
 export class IcecreamShopPhoto {
 
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
+  photo_id: number;
+
+  @Column()
   icecream_shop_id: number;
 
   @Column()
