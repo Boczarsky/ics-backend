@@ -5,10 +5,10 @@ import { IcecreamFlavour } from './icecream_flavour.entity';
 export class FlavourHashtag {
 
   @PrimaryColumn()
-  icecream_flavour_id: number;
+  hashtag: string;
 
   @PrimaryColumn()
-  hashtag: string;
+  icecream_flavour_id: number;
 
   @ManyToOne(() => IcecreamFlavour, icecreamFlavour => icecreamFlavour.hashtags)
   @JoinColumn({name: 'icecream_flavour_id'})

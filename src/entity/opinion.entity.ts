@@ -21,6 +21,9 @@ export class Opinion {
   @Column()
   content: string;
 
+  @Column()
+  grade: number;
+
   @OneToMany(() => OpinionComment, opinionComment => opinionComment.opinion)
   comments: OpinionComment[];
 

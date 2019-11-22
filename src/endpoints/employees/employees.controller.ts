@@ -8,6 +8,7 @@ import { ListEmployeesDto } from './dto/list-employees.dto';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EditEmployeeDto } from './dto/edit-employee.dto';
 import { DeleteEmployeeDto } from './dto/delete-employee.dto';
+import { AssignEmployeeDto } from './dto/assign-employee.dto';
 
 @Controller('employees')
 export class EmployeesController {
@@ -17,7 +18,7 @@ export class EmployeesController {
   @UseGuards(AuthGuard('jwt'))
   @Post('list')
   async listEmployees(@Request() req, @Body() filters: ListEmployeesDto) {
-    const userData: User = req.user.userData;
+    const userData = req.user.userData;
     const { user_id, user_type } = userData;
     if (user_type !== UserType.manager) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
@@ -28,7 +29,7 @@ export class EmployeesController {
   @UseGuards(AuthGuard('jwt'))
   @Post('create')
   async createEmployee(@Request() req, @Body() employeeData: CreateEmployeeDto) {
-    const userData: User = req.user.userData;
+    const userData = req.user.userData;
     const { user_id, user_type } = userData;
     if (user_type !== UserType.manager) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
@@ -39,7 +40,7 @@ export class EmployeesController {
   @UseGuards(AuthGuard('jwt'))
   @Post('edit')
   async editEmployee(@Request() req, @Body() employeeData: EditEmployeeDto) {
-    const userData: User = req.user.userData;
+    const userData = req.user.userData;
     const { user_id, user_type } = userData;
     if (user_type !== UserType.manager) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
@@ -50,12 +51,34 @@ export class EmployeesController {
   @UseGuards(AuthGuard('jwt'))
   @Post('delete')
   async deleteEmployee(@Request() req, @Body() employeeData: DeleteEmployeeDto) {
-    const userData: User = req.user.userData;
+    const userData = req.user.userData;
     const { user_id, user_type } = userData;
     if (user_type !== UserType.manager) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
     return await this.employeesService.deleteEmployee(+user_id, employeeData);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('assign')
+  async assignEmployee(@Request() req, @Body() assignData: AssignEmployeeDto) {
+    const userData = req.user.userData;
+    const { user_id, user_type } = userData;
+    if (user_type !== UserType.manager) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.employeesService.assignEmployee(+user_id, assignData);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('unassign')
+  async unassignEmployee(@Request() req, @Body() assignData: AssignEmployeeDto) {
+    const userData = req.user.userData;
+    const { user_id, user_type } = userData;
+    if (user_type !== UserType.manager) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.employeesService.unassignEmployee(+user_id, assignData);
   }
 
 }

@@ -8,6 +8,8 @@ import { PasswordHelper } from '../../common/password-helper';
 import { ErrorType } from '../../enums/error-type.enum';
 import { EditEmployeeDto } from './dto/edit-employee.dto';
 import { DeleteEmployeeDto } from './dto/delete-employee.dto';
+import { AssignEmployeeDto } from './dto/assign-employee.dto';
+import { Employment } from 'src/entity/employment.entity';
 
 @Injectable()
 export class EmployeesService {
@@ -136,6 +138,41 @@ export class EmployeesService {
       }
     }
     throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
+  }
+
+  async assignEmployee(managerId: number, assignData: AssignEmployeeDto) {
+    const userRepository = this.connection.getRepository(User);
+    const employee = userRepository.findOne({user_id: assignData.employeeId, manager_id: managerId});
+    if (!employee) {
+      throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
+    }
+    const employmentRepository = this.connection.getRepository(Employment);
+    const employment = new Employment();
+    employment.user_id = assignData.employeeId;
+    employment.icecream_shop_id = assignData.icecreamShopId;
+    try {
+      return await employmentRepository.manager.save(employment);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async unassignEmployee(managerId: number, assignData: AssignEmployeeDto) {
+    const userRepository = this.connection.getRepository(User);
+    const employee = userRepository.findOne({user_id: assignData.employeeId, manager_id: managerId});
+    if (!employee) {
+      throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
+    }
+    const employmentRepository = this.connection.getRepository(Employment);
+    const employment = await employmentRepository.findOne({user_id: assignData.employeeId, icecream_shop_id: assignData.icecreamShopId});
+    if (!employment) {
+      throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
+    }
+    try {
+      return await employmentRepository.manager.remove(employment);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
 }

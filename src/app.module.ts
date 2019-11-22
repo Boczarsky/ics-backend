@@ -7,6 +7,7 @@ import { IcecreamShopsModule } from './endpoints/icecream-shops/icecream-shops.m
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './endpoints/employees/employees.module';
 import { FlavoursModule } from './endpoints/flavours/flavours.module';
+import { OpinionsModule } from './endpoints/opinions/opinions.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { FlavoursModule } from './endpoints/flavours/flavours.module';
     AuthModule,
     EmployeesModule,
     FlavoursModule,
+    OpinionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

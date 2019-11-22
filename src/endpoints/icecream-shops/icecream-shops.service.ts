@@ -8,8 +8,8 @@ import { Follower } from '../../entity/follower.entity';
 import { ListMyIcecreamShopsDto } from './dto/list-my-icecream-shops';
 import { ListIcecreamShopsDto } from './dto/list-icecream-shops.dto';
 import { EditIcecreamShopDto } from './dto/edit-icecream-shop.dto';
-import { Employment } from 'src/entity/employment.entity';
-import { Localization } from 'src/entity/localization.entity';
+import { Employment } from '../../entity/employment.entity';
+import { Localization } from '../../entity/localization.entity';
 import { ListFavoriteIcecreamShopDto } from './dto/list-favorite-icecream-shop.dto';
 
 @Injectable()
@@ -17,11 +17,11 @@ export class IcecreamShopsService {
 
   constructor(private readonly connection: Connection) {}
 
-  async getIcecreamShop(icecreamShopId: number, userId: number, userType: UserType) {
+  async getIcecreamShop(icecreamShopId: number) {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     return await icecreamShopRepositiory.findOne({
       where: {icecream_shop_id: icecreamShopId},
-      relations: ['followers', 'opinions', 'posts', 'flavours'],
+      relations: ['followers', 'opinions', 'posts', 'flavours', 'localization'],
     });
   }
 
@@ -198,7 +198,6 @@ export class IcecreamShopsService {
     const { name, city, street, postal_code, description, icecreamShopId, logo_id, photo_id, localization } = editData;
     const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
     const employmentRepository = this.connection.getRepository(Employment);
-    const localizationRepository = this.connection.getRepository(Localization);
     const icecreamShop = await icecreamShopRepository.findOne({ icecream_shop_id: icecreamShopId });
     if (!icecreamShop) {
       throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
@@ -228,24 +227,30 @@ export class IcecreamShopsService {
       icecreamShop.description = description;
     }
     if (logo_id) {
-      // FILES NEEDED
+      icecreamShop.logo_id = logo_id;
     }
     if (photo_id) {
-      // FILES NEEDED
+      icecreamShop.photo_id = photo_id;
     }
     if (localization) {
-      const currentLocalization = await localizationRepository.findOne({icecream_shop_id: icecreamShopId});
-      if (currentLocalization) {
-        currentLocalization.latitude = localization.latitude;
-        currentLocalization.longitude = localization.longitude;
-        icecreamShop.localization = currentLocalization;
-      } else {
-        const newLocalization = new Localization();
-        newLocalization.icecream_shop_id = icecreamShopId;
-        newLocalization.latitude = localization.latitude;
-        newLocalization.longitude = localization.longitude;
-        icecreamShop.localization = newLocalization;
+      const newLocalization = new Localization();
+      newLocalization.icecream_shop_id = icecreamShopId;
+      newLocalization.latitude = localization.latitude;
+      newLocalization.longitude = localization.longitude;
+      if (icecreamShop.localization_id) {
+        newLocalization.localization_id = icecreamShop.localization_id;
       }
+      const localizationRepository = this.connection.getRepository(Localization);
+      try {
+        icecreamShop.localization = await localizationRepository.manager.save(newLocalization);
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      }
+    }
+    try {
+      return await icecreamShopRepository.manager.save(icecreamShop);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 

@@ -1,16 +1,19 @@
-import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { IcecreamShop } from './icecream-shop.entity';
 
 @Entity()
 export class Localization {
 
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
+  localization_id: number;
+
+  @Column()
   icecream_shop_id: number;
 
-  @Column()
+  @Column('float')
   latitude: number;
 
-  @Column()
+  @Column('float')
   longitude: number;
 
   @OneToOne(() => IcecreamShop, icecreamShop => icecreamShop.localization)

@@ -19,7 +19,7 @@ export class IcecreamShopsController {
   @Get(':id')
   async getIcecreamShop(@Request() req, @Param('id') id: string) {
     const { user_id, user_type } = req.user.userData;
-    return await this.icecreamShopsService.getIcecreamShop(+id, user_id, user_type);
+    return await this.icecreamShopsService.getIcecreamShop(+id);
   }
 
   @UseGuards(AuthGuard('jwt'))
