@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class AddOpinionCommentDto {
 
@@ -6,6 +6,6 @@ export class AddOpinionCommentDto {
   opinionId: number;
 
   @IsNotEmpty()
-  content: number;
+  content: string;
 
 }

@@ -1,8 +1,8 @@
 import { IsNumber } from 'class-validator';
 
-export class RemoveOpinionDto {
+export class ListPromotionsDto {
 
   @IsNumber()
-  opinionId: number;
+  managerId: number;
 
 }

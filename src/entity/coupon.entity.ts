@@ -17,9 +17,6 @@ export class Coupon {
   @Column()
   count: number;
 
-  @Column()
-  status: number;
-
   @ManyToOne(() => Promotion, promotion => promotion.coupons)
   @JoinColumn({name: 'promotion_id'})
   promotion: Promotion;

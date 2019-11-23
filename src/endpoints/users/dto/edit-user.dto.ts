@@ -12,6 +12,10 @@ export class EditUserDto {
   login: string;
 
   @IsOptional()
+  @IsNotEmpty()
+  avatar: string;
+
+  @IsOptional()
   @IsEmail()
   email: string;
 

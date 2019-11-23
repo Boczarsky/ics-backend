@@ -19,13 +19,14 @@ export class IcecreamShopsService {
 
   async getIcecreamShop(icecreamShopId: number) {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
-    return await icecreamShopRepositiory.findOne({
+    const response = await icecreamShopRepositiory.findOne({
       where: {icecream_shop_id: icecreamShopId},
       relations: ['followers', 'opinions', 'posts', 'flavours', 'localization'],
     });
+    return { ...response, followers: response.followers.length };
   }
 
-  async createIcecreamShop(ownerId: number, user_type: UserType, icecreamShopData: CreateIcecreamShopDto) {
+  async createIcecreamShop(ownerId: number, userType: UserType, icecreamShopData: CreateIcecreamShopDto) {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     const newIcecreamShop = new IcecreamShop();
     newIcecreamShop.name = icecreamShopData.name;
@@ -39,7 +40,7 @@ export class IcecreamShopsService {
     if (icecreamShopData.photo_id) {
       newIcecreamShop.photo_id = icecreamShopData.photo_id;
     }
-    if (user_type === UserType.admin) {
+    if (userType === UserType.admin) {
       if (!icecreamShopData.owner_id) {
         throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
       }
@@ -51,7 +52,7 @@ export class IcecreamShopsService {
       const result = await icecreamShopRepositiory.manager.save(newIcecreamShop);
       return {icecreamShopId: result.icecream_shop_id};
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -108,7 +109,7 @@ export class IcecreamShopsService {
         return prev;
       }, { result: [], total: 0 });
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -138,7 +139,7 @@ export class IcecreamShopsService {
       postal_code,
       longitude,
       latitude,
-      logo_id,
+      logo_file_name,
       json_agg(hashtag) as "hashtags"
     FROM icecream_shop_search ${whereString}
     GROUP BY
@@ -150,7 +151,7 @@ export class IcecreamShopsService {
       postal_code,
       longitude,
       latitude,
-      logo_id
+      logo_file_name
     LIMIT ${limit}
     OFFSET ${offset}
     `;
@@ -165,7 +166,7 @@ export class IcecreamShopsService {
         return prev;
       }, { result: [], total: 0 });
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -177,7 +178,7 @@ export class IcecreamShopsService {
     try {
       return await followerRepository.manager.save(follower);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -190,7 +191,7 @@ export class IcecreamShopsService {
     try {
       return await followerRepository.manager.remove(favorite);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -244,13 +245,13 @@ export class IcecreamShopsService {
       try {
         icecreamShop.localization = await localizationRepository.manager.save(newLocalization);
       } catch (error) {
-        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
     try {
       return await icecreamShopRepository.manager.save(icecreamShop);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -287,7 +288,7 @@ export class IcecreamShopsService {
         return prev;
       }, { result: [], total: 0 });
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

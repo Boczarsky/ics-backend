@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { Coupon } from './coupon.entity';
 import { IcecreamShop } from './icecream-shop.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Promotion {
@@ -8,7 +9,7 @@ export class Promotion {
   promotion_id: number;
 
   @Column()
-  icecream_shop_id: number;
+  user_id: number;
 
   @Column()
   info: string;
@@ -28,7 +29,7 @@ export class Promotion {
   @OneToMany(() => Coupon, coupon => coupon.promotion)
   coupons: Coupon[];
 
-  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.promotions)
-  @JoinColumn({name: 'icecream_shop_id'})
-  icecream_shop: IcecreamShop;
+  @ManyToOne(() => User, user => user.promotions)
+  @JoinColumn({name: 'user_id'})
+  user: User;
 }

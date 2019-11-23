@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { FilesController } from './files.controller';
-import { FilesService } from './files.service';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from '../../auth/constants';
 
 @Module({
-  imports: [],
+  imports: [JwtModule.register({
+    secret: jwtConstants.secret,
+    })],
   controllers: [FilesController],
-  providers: [FilesService],
+  providers: [],
 })
 export class FilesModule {}

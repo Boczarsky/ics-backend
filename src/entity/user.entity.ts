@@ -2,12 +2,14 @@ import { PrimaryGeneratedColumn, Column, Entity, OneToMany, ManyToOne, JoinColum
 import { IcecreamShop } from './icecream-shop.entity';
 import { Employment } from './employment.entity';
 import { Follower } from './follower.entity';
-import { Avatar } from './avatar.entity';
 import { Coupon } from './coupon.entity';
 import { OpinionComment } from './opinion_comment.entity';
 import { Opinion } from './opinion.entity';
 import { PostComment } from './post_comment.entity';
 import { ReportComment } from './report_comment.entity';
+import { FlavourReaction } from './flavour_reaction.entity';
+import { PostReaction } from './post_reaction.entity';
+import { Promotion } from './promotion.entity';
 
 @Entity()
 export class User {
@@ -19,6 +21,9 @@ export class User {
 
   @Column()
   user_type: number;
+
+  @Column({nullable: true})
+  avatar_file_name: string;
 
   @Column({unique: true})
   login: string;
@@ -51,9 +56,6 @@ export class User {
   @OneToMany(() => Follower, ff => ff.follower)
   favorites: Follower[];
 
-  @OneToOne(() => Avatar, avatar => avatar.user)
-  avatar: Avatar;
-
   @OneToMany(() => Coupon, coupon => coupon.user)
   coupons: Coupon[];
 
@@ -68,5 +70,14 @@ export class User {
 
   @OneToMany(() => ReportComment, reportComment => reportComment.user)
   report_comments: ReportComment[];
+
+  @OneToMany(() => FlavourReaction, flavourReaction => flavourReaction.user)
+  flavour_reactions: FlavourReaction[];
+
+  @OneToMany(() => PostReaction, postReaction => postReaction.user)
+  post_reactions: PostReaction[];
+
+  @OneToMany(() => Promotion, promotion => promotion.user)
+  promotions: Promotion[];
 
 }

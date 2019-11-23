@@ -5,4 +5,7 @@ export enum ErrorType {
   passwordMatchFailed = 'PasswordMatchFailed',
   accessDenied = 'AccessDenied',
   notFound = 'NotFound',
+  alreadyExist = 'AlreadyExist',
+  missingField = 'MissingField',
+  requirementsNotMet = 'RequirementsNotMet',
 }

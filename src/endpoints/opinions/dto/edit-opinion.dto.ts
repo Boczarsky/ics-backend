@@ -5,12 +5,6 @@ export class editOpinionDto {
   @IsNumber()
   opinionId: number;
 
-  @IsNumber()
-  icecreamShopId: number;
-
-  @IsNumber()
-  userId: number;
-
   @IsOptional()
   @IsNotEmpty()
   content: string;

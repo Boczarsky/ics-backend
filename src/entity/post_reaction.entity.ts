@@ -1,5 +1,6 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Post } from './post.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class PostReaction {
@@ -16,5 +17,9 @@ export class PostReaction {
   @ManyToOne(() => Post, post => post.reactions)
   @JoinColumn({name: 'post_id'})
   post: Post;
+
+  @ManyToOne(() => User, user => user.post_reactions)
+  @JoinColumn({name: 'user_id'})
+  user: User;
 
 }

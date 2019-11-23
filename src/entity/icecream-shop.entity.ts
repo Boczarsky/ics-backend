@@ -2,13 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinTable, ManyToOne
 import { User } from './user.entity';
 import { Employment } from './employment.entity';
 import { Follower } from './follower.entity';
-import { Promotion } from './promotion.entity';
-import { IcecreamShopLogo } from './icecream_shop_logo.entity';
-import { IcecreamShopPhoto } from './icecream_shop_photo.entity';
 import { IcecreamFlavour } from './icecream_flavour.entity';
 import { Localization } from './localization.entity';
 import { Post } from './post.entity';
 import { Opinion } from './opinion.entity';
+import { OpinionComment } from './opinion_comment.entity';
+import { PostComment } from './post_comment.entity';
 
 @Entity()
 export class IcecreamShop {
@@ -43,6 +42,12 @@ export class IcecreamShop {
   @Column()
   description: string;
 
+  @Column({nullable: true})
+  logo_file_name: string;
+
+  @Column({nullable: true})
+  photo_file_name: string;
+
   @ManyToOne(() => User, user => user.icecream_shops)
   @JoinColumn({name: 'owner_id'})
   owner: User;
@@ -52,17 +57,6 @@ export class IcecreamShop {
 
   @OneToMany(() => Follower, ff => ff.favorite)
   followers: Follower[];
-
-  @OneToMany(() => Promotion, promotion => promotion.icecream_shop)
-  promotions: Promotion[];
-
-  @OneToOne(() => IcecreamShopLogo, icecreamShopLogo => icecreamShopLogo.icecream_shop)
-  @JoinColumn({name: 'logo_id'})
-  logo: IcecreamShopLogo;
-
-  @OneToOne(() => IcecreamShopPhoto, icecreamShopPhoto => icecreamShopPhoto.icecream_shop)
-  @JoinColumn({name: 'photo_id'})
-  photo: IcecreamShopPhoto;
 
   @OneToMany(() => IcecreamFlavour, icecreamFlavour => icecreamFlavour.icecream_shop)
   flavours: IcecreamFlavour[];
@@ -76,5 +70,11 @@ export class IcecreamShop {
 
   @OneToMany(() => Opinion, opinion => opinion.icecream_shop)
   opinions: Opinion[];
+
+  @OneToMany(() => OpinionComment, opinionResponse => opinionResponse.icecream_shop)
+  opinion_responses: OpinionComment[];
+
+  @OneToMany(() => PostComment, postResponse => postResponse.icecream_shop)
+  post_responses: PostComment[];
 
 }

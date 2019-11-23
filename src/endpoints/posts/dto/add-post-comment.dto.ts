@@ -1,14 +1,11 @@
 import { IsNumber, IsNotEmpty } from 'class-validator';
 
-export class AddOpinionDto {
+export class AddPostCommentDto {
 
   @IsNumber()
-  icecreamShopId: number;
+  postId: number;
 
   @IsNotEmpty()
   content: string;
-
-  @IsNumber()
-  grade: number;
 
 }

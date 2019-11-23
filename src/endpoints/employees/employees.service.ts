@@ -9,7 +9,7 @@ import { ErrorType } from '../../enums/error-type.enum';
 import { EditEmployeeDto } from './dto/edit-employee.dto';
 import { DeleteEmployeeDto } from './dto/delete-employee.dto';
 import { AssignEmployeeDto } from './dto/assign-employee.dto';
-import { Employment } from 'src/entity/employment.entity';
+import { Employment } from '../../entity/employment.entity';
 
 @Injectable()
 export class EmployeesService {
@@ -70,7 +70,7 @@ export class EmployeesService {
         return prev;
       }, { result: [], total: 0 });
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -100,7 +100,7 @@ export class EmployeesService {
       const {password, ...result } = await userRepository.manager.save(newEmployee);
       return result;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -121,7 +121,7 @@ export class EmployeesService {
       const {password, ...result } = await userRepository.manager.save(employee);
       return result;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -134,7 +134,7 @@ export class EmployeesService {
         const { password, ...response } = result;
         return response;
       } catch (error) {
-        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
     throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
@@ -153,7 +153,7 @@ export class EmployeesService {
     try {
       return await employmentRepository.manager.save(employment);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -171,7 +171,7 @@ export class EmployeesService {
     try {
       return await employmentRepository.manager.remove(employment);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

@@ -24,14 +24,14 @@ export class Opinion {
   @Column()
   grade: number;
 
-  @OneToMany(() => OpinionComment, opinionComment => opinionComment.opinion)
+  @OneToMany(() => OpinionComment, opinionComment => opinionComment.opinion, {eager: true})
   comments: OpinionComment[];
 
-  @ManyToOne(() => User, user => user.opinions)
+  @ManyToOne(() => User, user => user.opinions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'user_id'})
   user: User;
 
-  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.opinions)
+  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.opinions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'icecream_shop_id'})
   icecream_shop: IcecreamShop;
 

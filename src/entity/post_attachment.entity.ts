@@ -11,13 +11,7 @@ export class PostAttachment {
   post_id: number;
 
   @Column()
-  file_path: string;
-
-  @Column()
   file_name: string;
-
-  @Column()
-  file_ext: string;
 
   @ManyToOne(() => Post, post => post.attachments)
   @JoinColumn({name: 'post_id'})

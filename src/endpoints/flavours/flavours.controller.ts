@@ -57,13 +57,6 @@ export class FlavoursController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('reactions/my')
-  async getMyReactions(@Request() req) {
-    const { user_id } = req.user.userData;
-    return this.flavoursService.getMyReactions(+user_id);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
   @Post('reactions/add')
   async addReaction(@Request() req, @Body() reactionData: AddReactionDto) {
     const { user_id, user_type } = req.user.userData;

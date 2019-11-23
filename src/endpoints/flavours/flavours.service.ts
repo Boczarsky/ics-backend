@@ -10,7 +10,7 @@ import { FlavourHashtag } from '../../entity/flavour_hashtag.entity';
 import { RemoveFlavourDto } from './dto/remove-flavour.dto';
 import { EditFlavourDto } from './dto/edit-flavour.dto';
 import { AddReactionDto } from './dto/add-reaction.dto';
-import { FlavourReaction } from 'src/entity/flavour_reaction.entity';
+import { FlavourReaction } from '../../entity/flavour_reaction.entity';
 import { RemoveReactionDto } from './dto/remove-reaction.dto';
 
 @Injectable()
@@ -59,7 +59,7 @@ export class FlavoursService {
       }
       return flavour;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -81,8 +81,10 @@ export class FlavoursService {
       editedFlavour.status = status;
     }
     try {
-      const flavour = await icecreamFlavourRepository.manager.save(editedFlavour);
-      if (flavour && hashtags) {
+      const archivalHashtags = [...editedFlavour.hashtags];
+      delete editedFlavour.hashtags;
+      const flavour = await icecreamFlavourRepository.manager.save(editedFlavour); // Error caused by hashtags from relations
+      if (flavour && hashtags && hashtags.length) {
         const hashtagsObjects = hashtags.map(hashtag => {
           const flavourHashtag = new FlavourHashtag();
           flavourHashtag.hashtag = hashtag;
@@ -95,9 +97,10 @@ export class FlavoursService {
         flavour.hashtags = await flavourHashtagRepository.manager.save(hashtagsObjects);
         return flavour;
       }
+      flavour.hashtags = archivalHashtags;
       return flavour;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -112,7 +115,7 @@ export class FlavoursService {
     try {
       return await icecreamFlavourRepository.remove(icecreamFlavour);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -135,7 +138,7 @@ export class FlavoursService {
     try {
       return await flavourReactionRepository.manager.save(reaction);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -145,13 +148,8 @@ export class FlavoursService {
     try {
       return await flavourReactionRepository.manager.remove(reaction);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  async getMyReactions(userId: number) {
-    const flavourReactionRepository = this.connection.getRepository(FlavourReaction);
-    return await flavourReactionRepository.find({user_id: userId});
   }
 
 }

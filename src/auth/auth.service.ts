@@ -18,7 +18,7 @@ export class AuthService {
     try {
       user = await userRepositiory.findOne({where: [{login}, {email: login}]});
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (user && this.passwordHelper.compare(pass, user.password)) {
       const { password, ...result } = user;
@@ -53,7 +53,7 @@ export class AuthService {
       const {password, ...result} = await userRepositiory.manager.save(newUser);
       return result;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

@@ -7,7 +7,6 @@ import { PasswordHelper } from '../../common/password-helper';
 import { ErrorType } from '../../enums/error-type.enum';
 import { ListUsersDto } from './dto/list-users.dto';
 import { EditMyUserDto } from './dto/edit-my-user.dto';
-import { DeleteEmployeeDto } from '../employees/dto/delete-employee.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 
 @Injectable()
@@ -34,6 +33,9 @@ export class UsersService {
     if (userData.lastName) {
       newUser.last_name = userData.lastName;
     }
+    if (userData.avatar) {
+      newUser.avatar_file_name = userData.avatar;
+    }
     newUser.login = userData.login;
     newUser.password = this.passwordHelper.hash(userData.password);
     newUser.email = userData.email;
@@ -45,7 +47,7 @@ export class UsersService {
       const { password, ...result } = await userRepository.manager.save(newUser);
       return result;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -84,12 +86,15 @@ export class UsersService {
     if (userData.lastName) {
       user.last_name = userData.lastName;
     }
+    if (userData.avatar) {
+      user.avatar_file_name = userData.avatar;
+    }
     try {
       const result = await userRepository.manager.save(user);
       const { password, ...response } = result;
       return response;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -130,22 +135,64 @@ export class UsersService {
         return prev;
       }, { result: [], total: 0 });
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async getMyUser(userId: number) {
     const userRepository = this.connection.getRepository(User);
-    const user = await userRepository.findOne({user_id: userId});
+    const user = await userRepository.findOne({
+      where: { user_id: userId },
+      relations: [
+        'manager',
+        'workplaces',
+        'icecream_shops',
+        'favorites',
+        'opinion_comments',
+        'opinions',
+        'post_comments',
+        'report_comments',
+        'flavour_reactions',
+        'post_reactions',
+      ],
+    });
     if (!user) {
       throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
     }
-    const { password, ...result } = user;
-    return result;
+    const {
+      password,
+      manager,
+      workplaces,
+      icecream_shops,
+      favorites,
+      opinion_comments,
+      opinions,
+      post_comments,
+      report_comments,
+      flavour_reactions,
+      post_reactions,
+      ...result } = user;
+    return {
+      ...result,
+      manager: manager && {
+        manager_id: manager.user_id,
+        first_name: manager.first_name,
+        last_name: manager.last_name,
+      },
+      workplaces: workplaces.map(workplace => workplace.icecream_shop_id),
+      icecream_shops: icecream_shops.map(icecreamShop => icecreamShop.icecream_shop_id),
+      favorites: favorites.map(favorite => favorite.icecream_shop_id),
+      opinion_comments: opinion_comments.map(comment => comment.opinion_comment_id),
+      opinions: opinions.map(opinion => opinion.opinion_id),
+      post_comments: post_comments.map(comment => comment.post_comment_id),
+      report_comment: report_comments.map(comment => comment.report_comment_id),
+      flavour_reactions: flavour_reactions.map(reaction => ({flavour_id: reaction.icecream_flavour_id, reactionType: reaction.reaction_type})),
+      post_reactions: post_reactions.map(reaction => ({post_id: reaction.post_id, reactionType: reaction.reaction_type})),
+    };
   }
 
   async editMyUser(userId: number, editData: EditMyUserDto) {
-    const { oldPassword, firstName, lastName } = editData;
+    const { oldPassword, firstName, lastName, avatar } = editData;
     const userRepository = this.connection.getRepository(User);
     const user = await userRepository.findOne({user_id: userId});
     if (!user) {
@@ -164,12 +211,15 @@ export class UsersService {
     if (lastName) {
       user.last_name = lastName;
     }
+    if (avatar) {
+      user.avatar_file_name = avatar;
+    }
     try {
       const result = await userRepository.manager.save(user);
       const { password, ...response } = result;
       return response;
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -182,7 +232,7 @@ export class UsersService {
         const { password, ...response } = result;
         return response;
       } catch (error) {
-        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       }
     }
     throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);

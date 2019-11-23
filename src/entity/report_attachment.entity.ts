@@ -11,13 +11,7 @@ export class ReportAttachment {
   report_id: number;
 
   @Column()
-  file_path: string;
-
-  @Column()
   file_name: string;
-
-  @Column()
-  file_ext: string;
 
   @ManyToOne(() => Report, report => report.attachments)
   @JoinColumn({name: 'report_id'})

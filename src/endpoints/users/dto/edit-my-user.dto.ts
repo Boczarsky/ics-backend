@@ -10,6 +10,10 @@ export class EditMyUserDto {
   @IsNotEmpty()
   lastName: string;
 
+  @IsOptional()
+  @IsNotEmpty()
+  avatar: string;
+
   @ValidateIf(o => o.password)
   @IsNotEmpty()
   oldPassword: string;
