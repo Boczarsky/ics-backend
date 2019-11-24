@@ -5,7 +5,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
 import { ListIcecreamShopsDto } from './dto/list-icecream-shops.dto';
-import { ListMyIcecreamShopsDto } from './dto/list-my-icecream-shops';
 import { EditIcecreamShopDto } from './dto/edit-icecream-shop.dto';
 import { ListFavoriteIcecreamShopDto } from './dto/list-favorite-icecream-shop.dto';
 import { ToggleFavoriteDto } from './dto/toggle-favorite.dto';
@@ -17,8 +16,7 @@ export class IcecreamShopsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get(':id')
-  async getIcecreamShop(@Request() req, @Param('id') id: string) {
-    const { user_id, user_type } = req.user.userData;
+  async getIcecreamShop(@Param('id') id: string) {
     return await this.icecreamShopsService.getIcecreamShop(+id);
   }
 
@@ -35,21 +33,7 @@ export class IcecreamShopsController {
   @UseGuards(AuthGuard('jwt'))
   @Post('list')
   async listIcecreamShops(@Body() filters: ListIcecreamShopsDto, @Request() req) {
-    const { user_type } = req.user.userData;
-    if (![UserType.admin, UserType.manager].includes(user_type)) {
-      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
-    }
     return await this.icecreamShopsService.listIcecreamShops(filters);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('list/my')
-  async listMyIcecreamShops(@Body() filters: ListMyIcecreamShopsDto, @Request() req) {
-    const { user_id, user_type } = req.user.userData;
-    if (UserType.manager !== user_type) {
-      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
-    }
-    return await this.icecreamShopsService.listMyIcecreamShops(user_id, filters);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -5,7 +5,6 @@ import { IcecreamShop } from '../../entity/icecream-shop.entity';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
 import { Follower } from '../../entity/follower.entity';
-import { ListMyIcecreamShopsDto } from './dto/list-my-icecream-shops';
 import { ListIcecreamShopsDto } from './dto/list-icecream-shops.dto';
 import { EditIcecreamShopDto } from './dto/edit-icecream-shop.dto';
 import { Employment } from '../../entity/employment.entity';
@@ -56,66 +55,15 @@ export class IcecreamShopsService {
     }
   }
 
-  async listMyIcecreamShops(ownerId: number, filters: ListMyIcecreamShopsDto) {
-    const { limit, offset, name, city, hashtags } = filters;
-    const where = [];
-    if (name) {
-      where.push(`lower(name) LIKE '%${name}%'`);
-    }
-    if (city) {
-      where.push(`lower(city) LIKE '%${city}%'`);
-    }
-    if (hashtags && hashtags.length) {
-      const quoted = hashtags.map(hashtag => `'${hashtag}'`);
-      where.push(`hashtag IN (${quoted.join(',')})`);
-    }
-    const whereString = where.length ? `WHERE owner_id = ${ownerId} AND ${where.join(' AND ')}` : `WHERE owner_id = ${ownerId}`;
-    const query = `
-    WITH count_ics AS (SELECT DISTINCT icecream_shop_id FROM icecream_shop_search ${whereString})
-    SELECT
-      (select count(*) as count FROM count_ics) as total,
-      icecream_shop_id,
-      owner_id,
-      name,
-      city,
-      street,
-      postal_code,
-      longitude,
-      latitude,
-      logo_id,
-      json_agg(hashtag) as "hashtags"
-    FROM icecream_shop_search ${whereString}
-    GROUP BY
-      icecream_shop_id,
-      owner_id,
-      name,
-      city,
-      street,
-      postal_code,
-      longitude,
-      latitude,
-      logo_id
-    LIMIT ${limit}
-    OFFSET ${offset}
-    `;
-    try {
-      const queryResult = await this.connection.query(query);
-      return queryResult.reduce((prev, curr) => {
-        const {total, ...result} = curr;
-        if (!prev.total) {
-          prev.total = total;
-        }
-        prev.result.push(result);
-        return prev;
-      }, { result: [], total: 0 });
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
   async listIcecreamShops(filters: ListIcecreamShopsDto) {
-    const { limit, offset, name, city, hashtags, localization } = filters;
+    const { limit, offset, name, city, hashtags, localization, employeeId, managerId } = filters;
     const where = [];
+    if (employeeId) {
+      where.push(`employee_id = ${employeeId}`);
+    }
+    if (managerId) {
+      where.push(`owner_id = ${managerId}`);
+    }
     if (name) {
       where.push(`lower(name) LIKE '%${name}%'`);
     }

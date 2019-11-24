@@ -14,6 +14,14 @@ export class ListIcecreamShopsDto {
   name: string;
 
   @IsOptional()
+  @IsNumber()
+  managerId: number;
+
+  @IsOptional()
+  @IsNumber()
+  employeeId: number;
+
+  @IsOptional()
   @IsNotEmpty()
   city: string;
 
