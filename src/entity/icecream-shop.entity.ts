@@ -16,12 +16,6 @@ export class IcecreamShop {
   icecream_shop_id: number;
 
   @Column({nullable: true})
-  logo_id: number;
-
-  @Column({nullable: true})
-  photo_id: number;
-
-  @Column({nullable: true})
   localization_id: number;
 
   @Column()

@@ -23,12 +23,12 @@ export class CreateIcecreamShopDto {
   description: string;
 
   @IsOptional()
-  @IsNumber()
-  photo_id: number;
+  @IsNotEmpty()
+  logo_file_name: string;
 
   @IsOptional()
-  @IsNumber()
-  logo_id: number;
+  @IsNotEmpty()
+  photo_file_name: string;
 
   @IsOptional()
   @IsNumber()

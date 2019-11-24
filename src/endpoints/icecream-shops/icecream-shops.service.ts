@@ -33,11 +33,11 @@ export class IcecreamShopsService {
     newIcecreamShop.street = icecreamShopData.street;
     newIcecreamShop.description = icecreamShopData.description;
     newIcecreamShop.postal_code = icecreamShopData.postal_code;
-    if (icecreamShopData.logo_id) {
-      newIcecreamShop.logo_id = icecreamShopData.logo_id;
+    if (icecreamShopData.logo_file_name) {
+      newIcecreamShop.logo_file_name = icecreamShopData.logo_file_name;
     }
-    if (icecreamShopData.photo_id) {
-      newIcecreamShop.photo_id = icecreamShopData.photo_id;
+    if (icecreamShopData.photo_file_name) {
+      newIcecreamShop.photo_file_name = icecreamShopData.photo_file_name;
     }
     if (userType === UserType.admin) {
       if (!icecreamShopData.owner_id) {
@@ -144,7 +144,7 @@ export class IcecreamShopsService {
   }
 
   async editIcecreamShop(userId: number, userType: UserType, editData: EditIcecreamShopDto) {
-    const { name, city, street, postal_code, description, icecreamShopId, logo_id, photo_id, localization } = editData;
+    const { name, city, street, postal_code, description, icecreamShopId, logo_file_name, photo_file_name, localization } = editData;
     const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
     const employmentRepository = this.connection.getRepository(Employment);
     const icecreamShop = await icecreamShopRepository.findOne({ icecream_shop_id: icecreamShopId });
@@ -175,11 +175,11 @@ export class IcecreamShopsService {
     if (description) {
       icecreamShop.description = description;
     }
-    if (logo_id) {
-      icecreamShop.logo_id = logo_id;
+    if (logo_file_name) {
+      icecreamShop.logo_file_name = logo_file_name;
     }
-    if (photo_id) {
-      icecreamShop.photo_id = photo_id;
+    if (photo_file_name) {
+      icecreamShop.photo_file_name = photo_file_name;
     }
     if (localization) {
       const newLocalization = new Localization();
