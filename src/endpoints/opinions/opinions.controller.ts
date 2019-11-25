@@ -42,7 +42,7 @@ export class OpinionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('comment')
+  @Post('addComment')
   async addOpinionComment(@Request() req, @Body() opinionData: AddOpinionCommentDto) {
     const { user_type, user_id } = req.user.userData;
     return this.opinionsService.addOpinionComment(+user_id, user_type, opinionData);

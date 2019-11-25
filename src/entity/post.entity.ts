@@ -23,13 +23,13 @@ export class Post {
   @JoinColumn({name: 'icecream_shop_id'})
   icecream_shop: IcecreamShop;
 
-  @OneToMany(() => PostAttachment, postAttachment => postAttachment.post)
+  @OneToMany(() => PostAttachment, postAttachment => postAttachment.post, {eager: true})
   attachments: PostAttachment[];
 
-  @OneToMany(() => PostComment, postComment => postComment.post)
+  @OneToMany(() => PostComment, postComment => postComment.post, {eager: true})
   comments: PostComment[];
 
-  @OneToMany(() => PostReaction, postReaction => postReaction.post)
+  @OneToMany(() => PostReaction, postReaction => postReaction.post, {eager: true})
   reactions: PostReaction[];
 
 }

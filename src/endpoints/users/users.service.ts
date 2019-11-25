@@ -180,7 +180,7 @@ export class UsersService {
         last_name: manager.last_name,
       },
       workplaces: workplaces.map(workplace => workplace.icecream_shop_id),
-      icecream_shops: icecream_shops.map(icecreamShop => icecreamShop.icecream_shop_id),
+      icecream_shops: icecream_shops.map(icecreamShop => ({id: icecreamShop.icecream_shop_id, name: icecreamShop.name})),
       favorites: favorites.map(favorite => favorite.icecream_shop_id),
       opinion_comments: opinion_comments.map(comment => comment.opinion_comment_id),
       opinions: opinions.map(opinion => opinion.opinion_id),

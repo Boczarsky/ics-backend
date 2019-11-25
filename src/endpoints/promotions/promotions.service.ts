@@ -127,12 +127,12 @@ export class PromotionsService {
 
   async listPromotions(managerId: number) {
     const promotionRepository = this.connection.getRepository(Promotion);
-    return promotionRepository.find({user_id: managerId});
+    return await promotionRepository.find({user_id: managerId});
   }
 
   async listCoupons(userId: number) {
     const couponRepository = this.connection.getRepository(Coupon);
-    return couponRepository.find({where: {user_id: userId}, relations: ['promotion']});
+    return await couponRepository.find({where: {user_id: userId}, relations: ['promotion']});
   }
 
 }
