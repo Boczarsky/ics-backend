@@ -1,3 +1,4 @@
+import { IcecreamShop } from './../../entity/icecream-shop.entity';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Connection } from 'typeorm';
 import { ListEmployeesDto } from './dto/list-employees.dto';
@@ -72,6 +73,16 @@ export class EmployeesService {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async getShopsToAssign(managerId: number) {
+    const icecreamShopsRepositiory = this.connection.getRepository(IcecreamShop);
+    return await icecreamShopsRepositiory.find({
+      select: ['icecream_shop_id', 'name'],
+      where: {
+        owner_id: managerId,
+      },
+    });
   }
 
   async createEmployee(managerId: number, employeeData: CreateEmployeeDto) {

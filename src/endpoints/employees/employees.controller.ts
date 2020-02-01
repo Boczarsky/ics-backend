@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Request, HttpException, HttpStatus, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, HttpException, HttpStatus, Body, Get } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from '../../entity/user.entity';
@@ -14,6 +14,17 @@ import { AssignEmployeeDto } from './dto/assign-employee.dto';
 export class EmployeesController {
 
   constructor(private readonly employeesService: EmployeesService) {}
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('shopsToAssign')
+  async shopToAssign(@Request() req) {
+    const userData = req.user.userData;
+    const { user_id, user_type } = userData;
+    if (user_type !== UserType.manager) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.employeesService.getShopsToAssign(+user_id);
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('list')

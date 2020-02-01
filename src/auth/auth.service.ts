@@ -29,9 +29,17 @@ export class AuthService {
 
   login(user: any) {
     const payload = { userData: user };
+    const { user_id, manager_id, user_type, login, email, first_name, last_name, avatar_file_name } = user;
     return {
       access_token: this.jwtService.sign(payload, {expiresIn: '1d'}),
-      user_type: user.user_type,
+      user_id,
+      manager_id,
+      user_type,
+      login,
+      email,
+      first_name,
+      last_name,
+      avatar_file_name,
     };
   }
 
