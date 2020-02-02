@@ -1,7 +1,6 @@
 import { Controller, Post, UseGuards, Request, HttpException, HttpStatus, Body, Get } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from '../../entity/user.entity';
 import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
 import { ListEmployeesDto } from './dto/list-employees.dto';

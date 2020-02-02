@@ -1,5 +1,4 @@
-import { IsNumber, IsOptional, IsNotEmpty, ValidateNested } from 'class-validator';
-import { LocalizationSearchDto } from './localization-search.dto';
+import { IsNumber, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class ListIcecreamShopsDto {
 
@@ -28,9 +27,5 @@ export class ListIcecreamShopsDto {
   @IsOptional()
   @IsNotEmpty({each: true})
   hashtags: string[];
-
-  @IsOptional()
-  @ValidateNested()
-  localization: LocalizationSearchDto;
 
 }

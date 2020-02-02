@@ -4,15 +4,11 @@ export class EditEmployeeDto {
 
   @IsNotEmpty()
   @IsNumber()
-  user_id: number;
+  userId: number;
 
   @IsOptional()
   @IsNotEmpty()
   password: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  oldPassword: string;
 
   @IsOptional()
   @Length(1, 20)

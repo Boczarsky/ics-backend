@@ -1,3 +1,5 @@
+import { SpecialDay } from './../../entity/special_day.entity';
+import { OpenDay } from './../../entity/open_day.entity';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Connection } from 'typeorm';
 import { CreateIcecreamShopDto } from './dto/create-icecream-shop.dto';
@@ -8,7 +10,6 @@ import { Follower } from '../../entity/follower.entity';
 import { ListIcecreamShopsDto } from './dto/list-icecream-shops.dto';
 import { EditIcecreamShopDto } from './dto/edit-icecream-shop.dto';
 import { Employment } from '../../entity/employment.entity';
-import { Localization } from '../../entity/localization.entity';
 import { ListFavoriteIcecreamShopDto } from './dto/list-favorite-icecream-shop.dto';
 
 @Injectable()
@@ -20,7 +21,7 @@ export class IcecreamShopsService {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     const response = await icecreamShopRepositiory.findOne({
       where: {icecream_shop_id: icecreamShopId},
-      relations: ['followers', 'opinions', 'posts', 'flavours', 'localization'],
+      relations: ['followers', 'opinions', 'posts', 'flavours', 'open_days', 'special_days'],
     });
     return { ...response, followers: response.followers.length };
   }
@@ -32,23 +33,55 @@ export class IcecreamShopsService {
     newIcecreamShop.city = icecreamShopData.city;
     newIcecreamShop.street = icecreamShopData.street;
     newIcecreamShop.description = icecreamShopData.description;
-    newIcecreamShop.postal_code = icecreamShopData.postal_code;
-    if (icecreamShopData.logo_file_name) {
-      newIcecreamShop.logo_file_name = icecreamShopData.logo_file_name;
+    newIcecreamShop.postal_code = icecreamShopData.postalCode;
+    if (icecreamShopData.googleMapLink) {
+      newIcecreamShop.google_map_link = icecreamShopData.googleMapLink;
     }
-    if (icecreamShopData.photo_file_name) {
-      newIcecreamShop.photo_file_name = icecreamShopData.photo_file_name;
+    if (icecreamShopData.logoFileName) {
+      newIcecreamShop.logo_file_name = icecreamShopData.logoFileName;
+    }
+    if (icecreamShopData.backgroundFileName) {
+      newIcecreamShop.background_file_name = icecreamShopData.backgroundFileName;
     }
     if (userType === UserType.admin) {
-      if (!icecreamShopData.owner_id) {
+      if (!icecreamShopData.ownerId) {
         throw new HttpException(ErrorType.userNotFound, HttpStatus.NOT_FOUND);
       }
-      newIcecreamShop.owner_id = icecreamShopData.owner_id;
+      newIcecreamShop.owner_id = icecreamShopData.ownerId;
     } else {
       newIcecreamShop.owner_id = ownerId;
     }
     try {
       const result = await icecreamShopRepositiory.manager.save(newIcecreamShop);
+      if (icecreamShopData.openDays && icecreamShopData.openDays.length) {
+        const openDayRepository = this.connection.getRepository(OpenDay);
+        const openDays = icecreamShopData.openDays.map(data => {
+          const oDay = new OpenDay();
+          oDay.icecream_shop_id = result.icecream_shop_id;
+          oDay.from = data.from;
+          oDay.to = data.to;
+          oDay.hour_from = data.hourFrom;
+          oDay.hour_to = data.hourTo;
+          return oDay;
+        });
+        await openDayRepository.save(openDays);
+      }
+      if (icecreamShopData.specialDays && icecreamShopData.specialDays.length) {
+        const specialDayRepository = this.connection.getRepository(SpecialDay);
+        const specialDays = icecreamShopData.specialDays.map(data => {
+          const sDay = new SpecialDay();
+          sDay.icecream_shop_id = result.icecream_shop_id;
+          sDay.closed = data.closed;
+          sDay.from = data.from;
+          sDay.to = data.to;
+          if (!data.closed) {
+            sDay.hour_from = data.hourFrom;
+            sDay.hour_to = data.hourTo;
+          }
+          return sDay;
+        });
+        await specialDayRepository.save(specialDays);
+      }
       return {icecreamShopId: result.icecream_shop_id};
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -56,7 +89,7 @@ export class IcecreamShopsService {
   }
 
   async listIcecreamShops(filters: ListIcecreamShopsDto) {
-    const { limit, offset, name, city, hashtags, localization, employeeId, managerId } = filters;
+    const { limit, offset, name, city, hashtags, employeeId, managerId } = filters;
     const where = [];
     if (employeeId) {
       where.push(`employee_id = ${employeeId}`);
@@ -144,7 +177,7 @@ export class IcecreamShopsService {
   }
 
   async editIcecreamShop(userId: number, userType: UserType, editData: EditIcecreamShopDto) {
-    const { name, city, street, postal_code, description, icecreamShopId, logo_file_name, photo_file_name, localization } = editData;
+    const { name, city, street, postalCode, description, icecreamShopId, logoFileName, backgroundFileName, googleMapLink, openDays, specialDays } = editData;
     const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
     const employmentRepository = this.connection.getRepository(Employment);
     const icecreamShop = await icecreamShopRepository.findOne({ icecream_shop_id: icecreamShopId });
@@ -169,35 +202,52 @@ export class IcecreamShopsService {
     if (street) {
       icecreamShop.street = street;
     }
-    if (postal_code) {
-      icecreamShop.postal_code = postal_code;
+    if (postalCode) {
+      icecreamShop.postal_code = postalCode;
     }
     if (description) {
       icecreamShop.description = description;
     }
-    if (logo_file_name) {
-      icecreamShop.logo_file_name = logo_file_name;
+    if (logoFileName) {
+      icecreamShop.logo_file_name = logoFileName;
     }
-    if (photo_file_name) {
-      icecreamShop.photo_file_name = photo_file_name;
+    if (backgroundFileName) {
+      icecreamShop.background_file_name = backgroundFileName;
     }
-    if (localization) {
-      const newLocalization = new Localization();
-      newLocalization.icecream_shop_id = icecreamShopId;
-      newLocalization.latitude = localization.latitude;
-      newLocalization.longitude = localization.longitude;
-      if (icecreamShop.localization_id) {
-        newLocalization.localization_id = icecreamShop.localization_id;
-      }
-      const localizationRepository = this.connection.getRepository(Localization);
-      try {
-        icecreamShop.localization = await localizationRepository.manager.save(newLocalization);
-      } catch (error) {
-        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-    }
+    icecreamShop.google_map_link = googleMapLink;
     try {
-      return await icecreamShopRepository.manager.save(icecreamShop);
+      if (openDays) {
+        const oDays = openDays.map(data => {
+          const oDay = new OpenDay();
+          oDay.icecream_shop_id = icecreamShop.icecream_shop_id;
+          oDay.from = data.from;
+          oDay.to = data.to;
+          oDay.hour_from = data.hourFrom;
+          oDay.hour_to = data.hourTo;
+          return oDay;
+        });
+        const openDayRepository = this.connection.getRepository(OpenDay);
+        await openDayRepository.delete({ icecream_shop_id: icecreamShop.icecream_shop_id });
+        await openDayRepository.save(oDays);
+      }
+      if (specialDays) {
+        const sDays = specialDays.map(data => {
+          const sDay = new SpecialDay();
+          sDay.icecream_shop_id = icecreamShop.icecream_shop_id;
+          sDay.closed = data.closed;
+          sDay.from = data.from;
+          sDay.to = data.to;
+          if (!data.closed) {
+            sDay.hour_from = data.hourFrom;
+            sDay.hour_to = data.hourTo;
+          }
+          return sDay;
+        });
+        const specialDayRepository = this.connection.getRepository(SpecialDay);
+        await specialDayRepository.delete({ icecream_shop_id: icecreamShop.icecream_shop_id });
+        await specialDayRepository.save(sDays);
+      }
+      return await icecreamShopRepository.manager.save(icecreamShop, {});
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -209,18 +259,14 @@ export class IcecreamShopsService {
     WITH count_ics AS (SELECT DISTINCT "user_id", "icecream_shop_id" FROM "follower" WHERE "user_id" = ${userId})
     SELECT
       (select count(*) as count FROM count_ics) as "total",
-      "ics"."icecream_shop_id",
-      "ics"."owner_id",
+      "ics"."icecream_shop_id" as id,
       "ics"."name",
       "ics"."city",
       "ics"."street",
       "ics"."postal_code",
-      "l"."longitude",
-      "l"."latitude",
-      "ics"."logo_id"
+      "ics"."logo_file_name"
     FROM "follower" "f"
     LEFT JOIN "icecream_shop" "ics" ON "f"."icecream_shop_id" = "ics"."icecream_shop_id"
-    LEFT JOIN "localization" "l" ON "ics"."icecream_shop_id" = "l"."icecream_shop_id"
     WHERE "f"."user_id" = ${userId}
     LIMIT ${limit}
     OFFSET ${offset}

@@ -9,8 +9,6 @@ import { EditPostDto } from './dto/edit-post.dto';
 import { RemovePostDto } from './dto/remove-post.dto';
 import { AddPostReactionDto } from './dto/add-post-reaction';
 import { RemovePostReactionDto } from './dto/remove-post-reaction.dto';
-import { AddPostCommentDto } from './dto/add-post-comment.dto';
-import { RemovePostCommentDto } from './dto/remove-post-comment.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -71,20 +69,6 @@ export class PostsController {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
     return this.postsService.removeReaction(+user_id, reactionData);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('addComment')
-  async addComment(@Request() req, @Body() reactionData: AddPostCommentDto) {
-    const { user_id, user_type } = req.user.userData;
-    return this.postsService.addPostComment(+user_id, user_type, reactionData);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('removeComment')
-  async removeComment(@Request() req, @Body() reactionData: RemovePostCommentDto) {
-    const { user_id, user_type } = req.user.userData;
-    return this.postsService.removePostComment(+user_id, user_type, reactionData);
   }
 
 }

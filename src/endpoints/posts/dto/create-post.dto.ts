@@ -6,9 +6,8 @@ export class CreatePostDto {
   icecreamShopId: number;
 
   @IsOptional()
-  @IsArray()
   @IsString({each: true})
-  attachments: string[];
+  fileName: string;
 
   @IsNotEmpty()
   content: string;

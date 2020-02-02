@@ -9,12 +9,9 @@ SELECT
 	"i"."city",
 	"i"."street",
 	"i"."postal_code",
-	"l"."longitude",
-	"l"."latitude",
   "h"."hashtag",
   "e"."user_id" as "employee_id"
 FROM "icecream_shop" "i"
-LEFT JOIN "localization" "l" ON "i"."icecream_shop_id" = "l"."icecream_shop_id"
 LEFT JOIN "icecream_flavour" "f" ON "i"."icecream_shop_id" = "f"."icecream_shop_id"
 LEFT JOIN "flavour_hashtag" "h" ON "f"."icecream_flavour_id" = "h"."icecream_flavour_id"
 LEFT JOIN "employment" "e" ON "i"."icecream_shop_id" = "e"."icecream_shop_id"
@@ -38,12 +35,6 @@ export class IcecreamShopSearch {
 
   @ViewColumn()
   postal_code: string;
-
-  @ViewColumn()
-  longitude: number;
-
-  @ViewColumn()
-  latitude: number;
 
   @ViewColumn()
   hashtag: string;

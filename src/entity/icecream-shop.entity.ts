@@ -3,20 +3,17 @@ import { User } from './user.entity';
 import { Employment } from './employment.entity';
 import { Follower } from './follower.entity';
 import { IcecreamFlavour } from './icecream_flavour.entity';
-import { Localization } from './localization.entity';
 import { Post } from './post.entity';
 import { Opinion } from './opinion.entity';
 import { OpinionComment } from './opinion_comment.entity';
-import { PostComment } from './post_comment.entity';
+import { OpenDay } from './open_day.entity';
+import { SpecialDay } from './special_day.entity';
 
 @Entity()
 export class IcecreamShop {
 
   @PrimaryGeneratedColumn()
   icecream_shop_id: number;
-
-  @Column({nullable: true})
-  localization_id: number;
 
   @Column()
   owner_id: number;
@@ -40,7 +37,16 @@ export class IcecreamShop {
   logo_file_name: string;
 
   @Column({nullable: true})
-  photo_file_name: string;
+  background_file_name: string;
+
+  @Column({nullable: true})
+  google_map_link: string;
+
+  @OneToMany(() => OpenDay, od => od.icecream_shop)
+  open_days: OpenDay[];
+
+  @OneToMany(() => SpecialDay, od => od.icecream_shop)
+  special_days: SpecialDay[];
 
   @ManyToOne(() => User, user => user.icecream_shops)
   @JoinColumn({name: 'owner_id'})
@@ -55,10 +61,6 @@ export class IcecreamShop {
   @OneToMany(() => IcecreamFlavour, icecreamFlavour => icecreamFlavour.icecream_shop)
   flavours: IcecreamFlavour[];
 
-  @OneToOne(() => Localization, localization => localization.icecream_shop)
-  @JoinColumn({name: 'localization_id'})
-  localization: Localization;
-
   @OneToMany(() => Post, post => post.icecream_shop)
   posts: Post[];
 
@@ -67,8 +69,5 @@ export class IcecreamShop {
 
   @OneToMany(() => OpinionComment, opinionResponse => opinionResponse.icecream_shop)
   opinion_responses: OpinionComment[];
-
-  @OneToMany(() => PostComment, postResponse => postResponse.icecream_shop)
-  post_responses: PostComment[];
 
 }

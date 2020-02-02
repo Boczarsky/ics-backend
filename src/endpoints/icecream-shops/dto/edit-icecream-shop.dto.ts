@@ -1,5 +1,6 @@
+import { SpecialDay } from './special-day';
+import { OpenDay } from './open-day';
 import { IsNumber, IsNotEmpty, IsString, IsOptional, ValidateNested } from 'class-validator';
-import { LocalizationDto } from './localization.dto';
 
 export class EditIcecreamShopDto {
 
@@ -19,7 +20,7 @@ export class EditIcecreamShopDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
-  postal_code: string;
+  postalCode: string;
 
   @IsOptional()
   @IsNotEmpty()
@@ -32,15 +33,20 @@ export class EditIcecreamShopDto {
   description: string;
 
   @IsOptional()
-  @IsNotEmpty()
-  logo_file_name: string;
+  logoFileName: string;
 
   @IsOptional()
-  @IsNotEmpty()
-  photo_file_name: string;
+  backgroundFileName: string;
 
   @IsOptional()
-  @ValidateNested()
-  localization: LocalizationDto;
+  googleMapLink: string;
+
+  @IsOptional()
+  @ValidateNested({each: true})
+  openDays: OpenDay[];
+
+  @IsOptional()
+  @ValidateNested({each: true})
+  specialDays: SpecialDay[];
 
 }

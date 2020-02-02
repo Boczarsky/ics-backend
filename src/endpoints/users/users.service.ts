@@ -150,8 +150,6 @@ export class UsersService {
         'favorites',
         'opinion_comments',
         'opinions',
-        'post_comments',
-        'report_comments',
         'flavour_reactions',
         'post_reactions',
       ],
@@ -167,8 +165,6 @@ export class UsersService {
       favorites,
       opinion_comments,
       opinions,
-      post_comments,
-      report_comments,
       flavour_reactions,
       post_reactions,
       ...result } = user;
@@ -184,8 +180,6 @@ export class UsersService {
       favorites: favorites.map(favorite => favorite.icecream_shop_id),
       opinion_comments: opinion_comments.map(comment => comment.opinion_comment_id),
       opinions: opinions.map(opinion => opinion.opinion_id),
-      post_comments: post_comments.map(comment => comment.post_comment_id),
-      report_comment: report_comments.map(comment => comment.report_comment_id),
       flavour_reactions: flavour_reactions.map(reaction => ({flavour_id: reaction.icecream_flavour_id, reactionType: reaction.reaction_type})),
       post_reactions: post_reactions.map(reaction => ({post_id: reaction.post_id, reactionType: reaction.reaction_type})),
     };

@@ -6,17 +6,12 @@ import { IcecreamShop } from '../../entity/icecream-shop.entity';
 import { ErrorType } from '../../enums/error-type.enum';
 import { Employment } from '../../entity/employment.entity';
 import { Post } from '../../entity/post.entity';
-import { PostAttachment } from '../../entity/post_attachment.entity';
 import { EditPostDto } from './dto/edit-post.dto';
 import { RemovePostDto } from './dto/remove-post.dto';
-import { AddPostCommentDto } from './dto/add-post-comment.dto';
-import { PostComment } from '../../entity/post_comment.entity';
-import { RemovePostCommentDto } from './dto/remove-post-comment.dto';
 import { AddPostReactionDto } from './dto/add-post-reaction';
 import { PostReaction } from '../../entity/post_reaction.entity';
 import { RemovePostReactionDto } from './dto/remove-post-reaction.dto';
 import { ListPostsDto } from './dto/list-posts.dto';
-import { totalmem } from 'os';
 
 @Injectable()
 export class PostsService {
@@ -41,76 +36,38 @@ export class PostsService {
   }
 
   async createPost(userId: number, userType: UserType, postData: CreatePostDto) {
-    const { icecreamShopId, content, attachments } = postData;
+    const { icecreamShopId, content, fileName } = postData;
     this.checkPermissions(userId, userType, icecreamShopId);
     const newPost = new Post();
     newPost.content = content;
     newPost.icecream_shop_id = icecreamShopId;
+    newPost.file_name = fileName;
     newPost.created_at = new Date().toISOString();
     const postRepository = this.connection.getRepository(Post);
-    let createdPost: Post;
     try {
-      createdPost = await postRepository.manager.save(newPost);
+      return await postRepository.manager.save(newPost);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    if (createdPost && attachments) {
-      const postAttachmentRepository = this.connection.getRepository(PostAttachment);
-      const files = attachments.map(fileName => {
-        const attachment = new PostAttachment();
-        attachment.file_name = fileName;
-        attachment.post_id = createdPost.post_id;
-        return attachment;
-      });
-      try {
-        createdPost.attachments = await postAttachmentRepository.manager.save(files);
-      } catch (error) {
-        createdPost.attachments = [];
-      }
-    }
-    return createdPost;
   }
 
   async editPost(userId: number, userType: UserType, postData: EditPostDto) {
-    const { postId, content, attachments, attachmentsToDelete } = postData;
+    const { postId, content, fileName } = postData;
     const postRepository = this.connection.getRepository(Post);
     const post = await postRepository.findOne({post_id: postId});
     if (!post) {
       throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
     }
     this.checkPermissions(userId, userType, post.icecream_shop_id);
+    post.file_name = fileName;
     if (content) {
       post.content = content;
     }
-    let editedPost;
     try {
-      editedPost = await postRepository.manager.save(post);
+      return await postRepository.manager.save(post);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    const postAttachmentRepository = this.connection.getRepository(PostAttachment);
-    if (attachmentsToDelete) {
-      const currentAttachments = await postAttachmentRepository.find({post_attachment_id: In(attachmentsToDelete)});
-      try {
-        editedPost.attachments = await postAttachmentRepository.manager.remove(currentAttachments);
-      } catch (error) {
-        editedPost.attachments = [...editedPost.attachments];
-      }
-    }
-    if (attachments) {
-      const newAttachments = attachments.map(fileName => {
-        const attachment = new PostAttachment();
-        attachment.file_name = fileName;
-        attachment.post_id = postId;
-        return attachment;
-      });
-      try {
-        editedPost.attachments = await postAttachmentRepository.manager.save(newAttachments);
-      } catch (error) {
-        editedPost.attachments = [...editedPost.attachments];
-      }
-    }
-    return editedPost;
   }
 
   async removePost(userId: number, userType: UserType, postData: RemovePostDto) {
@@ -124,54 +81,6 @@ export class PostsService {
     this.checkPermissions(userId, userType, icecreamShopId);
     try {
       return await postRepository.remove(post);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  async addPostComment(userId: number, userType: UserType, commentData: AddPostCommentDto) {
-    const { postId, content } = commentData;
-    const postRepository = this.connection.getRepository(Post);
-    const post = await postRepository.findOne({post_id: postId});
-    if (!post) {
-      throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
-    }
-    if ([UserType.manager, UserType.employee].includes(userType)) {
-      this.checkPermissions(userId, userType, post.icecream_shop_id);
-    }
-    const comment = new PostComment();
-    comment.content = content;
-    comment.user_id = userId;
-    comment.post_id = postId;
-    comment.created_at = new Date().toISOString();
-    if ([UserType.manager, UserType.employee].includes(userType)) {
-      comment.icecream_shop_id = post.icecream_shop_id;
-    }
-    const opinionCommentRepository = this.connection.getRepository(PostComment);
-    try {
-      return await opinionCommentRepository.manager.save(comment);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  async removePostComment(userId: number, userType: UserType, commentData: RemovePostCommentDto) {
-    const { postId, commentId } = commentData;
-    const postRepository = this.connection.getRepository(Post);
-    const post = await postRepository.findOne({post_id: postId});
-    const postCommentRepository = this.connection.getRepository(PostComment);
-    const comment = await postCommentRepository.findOne({post_comment_id: commentId});
-    if (!post || !comment) {
-      throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
-    }
-    if ([UserType.employee, UserType.manager].includes(userType)) {
-      this.checkPermissions(userId, userType, post.icecream_shop_id);
-    }
-    if (userType === UserType.client && comment.user_id !== userId) {
-      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
-    }
-    try {
-      return await postCommentRepository.manager.remove(comment);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

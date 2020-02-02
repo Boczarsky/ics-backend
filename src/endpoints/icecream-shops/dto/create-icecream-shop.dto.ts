@@ -1,4 +1,6 @@
-import { IsNotEmpty, IsNumber, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, IsOptional, ValidateNested } from 'class-validator';
+import { OpenDay } from './open-day';
+import { SpecialDay } from './special-day';
 
 export class CreateIcecreamShopDto {
 
@@ -12,7 +14,7 @@ export class CreateIcecreamShopDto {
 
   @IsNotEmpty()
   @IsString()
-  postal_code: string;
+  postalCode: string;
 
   @IsNotEmpty()
   @IsString()
@@ -23,15 +25,25 @@ export class CreateIcecreamShopDto {
   description: string;
 
   @IsOptional()
-  @IsNotEmpty()
-  logo_file_name: string;
+  @IsString()
+  logoFileName: string;
 
   @IsOptional()
-  @IsNotEmpty()
-  photo_file_name: string;
+  @IsString()
+  backgroundFileName: string;
+
+  @IsOptional()
+  @IsString()
+  googleMapLink: string;
 
   @IsOptional()
   @IsNumber()
-  owner_id: number;
+  ownerId: number;
+
+  @ValidateNested({each: true})
+  openDays: OpenDay[];
+
+  @ValidateNested({each: true})
+  specialDays: SpecialDay[];
 
 }

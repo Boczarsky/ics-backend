@@ -118,7 +118,7 @@ export class EmployeesService {
   async editEmployee(managerId: number, employeeData: EditEmployeeDto) {
     const userRepository = this.connection.getRepository(User);
     let employee: User;
-    employee = await userRepository.findOne({user_id: employeeData.user_id, manager_id: managerId});
+    employee = await userRepository.findOne({user_id: employeeData.userId, manager_id: managerId});
     if (employeeData.password) {
       employee.password = this.passwordHelper.hash(employeeData.password);
     }

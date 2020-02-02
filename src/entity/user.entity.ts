@@ -1,12 +1,10 @@
-import { PrimaryGeneratedColumn, Column, Entity, OneToMany, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { PrimaryGeneratedColumn, Column, Entity, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { IcecreamShop } from './icecream-shop.entity';
 import { Employment } from './employment.entity';
 import { Follower } from './follower.entity';
 import { Coupon } from './coupon.entity';
 import { OpinionComment } from './opinion_comment.entity';
 import { Opinion } from './opinion.entity';
-import { PostComment } from './post_comment.entity';
-import { ReportComment } from './report_comment.entity';
 import { FlavourReaction } from './flavour_reaction.entity';
 import { PostReaction } from './post_reaction.entity';
 import { Promotion } from './promotion.entity';
@@ -64,12 +62,6 @@ export class User {
 
   @OneToMany(() => Opinion, opinion => opinion.user)
   opinions: Opinion[];
-
-  @OneToMany(() => PostComment, postComment => postComment.user)
-  post_comments: PostComment[];
-
-  @OneToMany(() => ReportComment, reportComment => reportComment.user)
-  report_comments: ReportComment[];
 
   @OneToMany(() => FlavourReaction, flavourReaction => flavourReaction.user)
   flavour_reactions: FlavourReaction[];

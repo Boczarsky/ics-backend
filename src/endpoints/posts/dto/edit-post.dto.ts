@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsNotEmpty, IsArray } from 'class-validator';
+import { IsNumber, IsOptional, IsNotEmpty, IsString } from 'class-validator';
 
 export class EditPostDto {
 
@@ -10,13 +10,7 @@ export class EditPostDto {
   content: string;
 
   @IsOptional()
-  @IsArray()
-  @IsNumber({}, {each: true})
-  attachmentsToDelete: number[];
-
-  @IsOptional()
-  @IsArray()
-  @IsNumber({}, {each: true})
-  attachments: string[];
+  @IsString()
+  fileName: string;
 
 }
