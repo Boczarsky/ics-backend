@@ -17,13 +17,13 @@ export class IcecreamShopsService {
 
   constructor(private readonly connection: Connection) {}
 
-  async getIcecreamShop(icecreamShopId: number) {
+  async getIcecreamShop(icecreamShopId: number, uType: number) {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
     const response = await icecreamShopRepositiory.findOne({
       where: {icecream_shop_id: icecreamShopId},
-      relations: ['followers', 'opinions', 'posts', 'flavours', 'open_days', 'special_days'],
+      relations: ['followers', 'opinions', 'posts', 'flavours', 'flavours.hashtags', 'open_days', 'special_days'],
     });
-    return { ...response, followers: response.followers.length };
+    return { ...response, flavours: response.flavours.filter(flavour => UserType.client === uType ? flavour.status !== 3 : true ), followers: response.followers.length };
   }
 
   async createIcecreamShop(ownerId: number, userType: UserType, icecreamShopData: CreateIcecreamShopDto) {
@@ -118,9 +118,8 @@ export class IcecreamShopsService {
       city,
       street,
       postal_code,
-      longitude,
-      latitude,
       logo_file_name,
+      follows,
       json_agg(hashtag) as "hashtags"
     FROM icecream_shop_search ${whereString}
     GROUP BY
@@ -130,9 +129,8 @@ export class IcecreamShopsService {
       city,
       street,
       postal_code,
-      longitude,
-      latitude,
-      logo_file_name
+      logo_file_name,
+      follows
     LIMIT ${limit}
     OFFSET ${offset}
     `;

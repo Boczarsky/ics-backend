@@ -16,8 +16,8 @@ export class IcecreamShopsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get(':id')
-  async getIcecreamShop(@Param('id') id: string) {
-    return await this.icecreamShopsService.getIcecreamShop(+id);
+  async getIcecreamShop(@Param('id') id: string, @Request() req) {
+    return await this.icecreamShopsService.getIcecreamShop(+id, req.user.userData.user_type);
   }
 
   @UseGuards(AuthGuard('jwt'))

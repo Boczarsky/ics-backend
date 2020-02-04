@@ -25,10 +25,10 @@ export class IcecreamFlavour {
   @JoinColumn({name: 'icecream_shop_id'})
   icecream_shop: IcecreamShop;
 
-  @OneToMany(() => FlavourReaction, flavourReaction => flavourReaction.icecream_flavour, {eager: true})
+  @OneToMany(() => FlavourReaction, flavourReaction => flavourReaction.icecream_flavour, {eager: true, cascade: ['remove']})
   reactions: FlavourReaction[];
 
-  @OneToMany(() => FlavourHashtag, flavourHashtag => flavourHashtag.icecream_flavour, {eager: true})
+  @OneToMany(() => FlavourHashtag, flavourHashtag => flavourHashtag.icecream_flavour, {eager: true, cascade: ['remove']})
   hashtags: FlavourHashtag[];
 
 }
