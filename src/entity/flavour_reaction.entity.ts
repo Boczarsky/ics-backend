@@ -14,11 +14,11 @@ export class FlavourReaction {
   @Column()
   reaction_type: number;
 
-  @ManyToOne(() => IcecreamFlavour, icecreamFlavour => icecreamFlavour.reactions)
+  @ManyToOne(() => IcecreamFlavour, icecreamFlavour => icecreamFlavour.reactions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'icecream_flavour_id'})
   icecream_flavour: IcecreamFlavour;
 
-  @ManyToOne(() => User, user => user.flavour_reactions)
+  @ManyToOne(() => User, user => user.flavour_reactions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'user_id'})
   user: User;
 
