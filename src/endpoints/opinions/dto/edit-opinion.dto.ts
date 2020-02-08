@@ -1,6 +1,6 @@
 import { IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
 
-export class editOpinionDto {
+export class EditOpinionDto {
 
   @IsNumber()
   opinionId: number;

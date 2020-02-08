@@ -21,6 +21,9 @@ export class OpinionComment {
   @Column()
   content: string;
 
+  @Column()
+  created_at: string;
+
   @ManyToOne(() => Opinion, opinion => opinion.comments, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'opinion_id'})
   opinion: Opinion;

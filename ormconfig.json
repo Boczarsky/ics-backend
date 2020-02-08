@@ -6,7 +6,7 @@
   "password": "root",
   "database": "icsdb",
   "synchronize": true,
-  "logging": false,
+  "logging": true,
    "entities": [
       "dist/**/*.entity{.ts,.js}"
    ]

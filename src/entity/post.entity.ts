@@ -17,8 +17,11 @@ export class Post {
   @Column()
   content: string;
 
-  @Column()
+  @Column({nullable: true})
   file_name: string;
+
+  @Column()
+  title: string;
 
   @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.posts)
   @JoinColumn({name: 'icecream_shop_id'})

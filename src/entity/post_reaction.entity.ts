@@ -14,11 +14,11 @@ export class PostReaction {
   @Column()
   reaction_type: number;
 
-  @ManyToOne(() => Post, post => post.reactions)
+  @ManyToOne(() => Post, post => post.reactions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'post_id'})
   post: Post;
 
-  @ManyToOne(() => User, user => user.post_reactions)
+  @ManyToOne(() => User, user => user.post_reactions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'user_id'})
   user: User;
 

@@ -6,8 +6,11 @@ export class CreatePostDto {
   icecreamShopId: number;
 
   @IsOptional()
-  @IsString({each: true})
+  @IsString()
   fileName: string;
+
+  @IsNotEmpty()
+  title: string;
 
   @IsNotEmpty()
   content: string;

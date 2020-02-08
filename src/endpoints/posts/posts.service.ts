@@ -8,7 +8,7 @@ import { Employment } from '../../entity/employment.entity';
 import { Post } from '../../entity/post.entity';
 import { EditPostDto } from './dto/edit-post.dto';
 import { RemovePostDto } from './dto/remove-post.dto';
-import { AddPostReactionDto } from './dto/add-post-reaction';
+import { AddPostReactionDto } from './dto/add-post-reaction.dto';
 import { PostReaction } from '../../entity/post_reaction.entity';
 import { RemovePostReactionDto } from './dto/remove-post-reaction.dto';
 import { ListPostsDto } from './dto/list-posts.dto';
@@ -36,12 +36,15 @@ export class PostsService {
   }
 
   async createPost(userId: number, userType: UserType, postData: CreatePostDto) {
-    const { icecreamShopId, content, fileName } = postData;
+    const { icecreamShopId, content, fileName, title } = postData;
     this.checkPermissions(userId, userType, icecreamShopId);
     const newPost = new Post();
+    newPost.title = title;
     newPost.content = content;
     newPost.icecream_shop_id = icecreamShopId;
-    newPost.file_name = fileName;
+    if (fileName) {
+      newPost.file_name = fileName;
+    }
     newPost.created_at = new Date().toISOString();
     const postRepository = this.connection.getRepository(Post);
     try {
@@ -120,20 +123,12 @@ export class PostsService {
     WITH count_post AS (SELECT DISTINCT "post_id", "name", "created_at", "logo_file_name" FROM "list_post" ${whereString})
     SELECT
       (SELECT count(*) FROM count_post) as "total",
+      "icecream_shop_id",
       "post_id",
       "name",
       "content",
       "created_at",
       "logo_file_name",
-      json_agg(
-        CASE WHEN "comment_to" IS null THEN null
-        ELSE json_build_object(
-          'id', "post_comment_id",
-          'author', "comment_author",
-          'content', "comment_content",
-          'post_id', "comment_to"
-        ) END
-      ) as comments,
       json_agg(
         CASE WHEN "reaction_to" IS null THEN null
         ELSE json_build_object(
@@ -142,14 +137,18 @@ export class PostsService {
             'post_id', "reaction_to"
           ) END
       ) as reactions,
-      json_agg("file_name") as files
+      title,
+      file_name
     FROM "list_post" ${whereString}
     GROUP BY
       post_id,
       name,
       content,
       created_at,
-      logo_file_name
+      logo_file_name,
+      file_name,
+      title,
+      icecream_shop_id
     LIMIT ${limit}
     OFFSET ${offset}
     `;
@@ -159,9 +158,7 @@ export class PostsService {
       if (prev.total !== total) {
         prev.total = total;
       }
-      rest.comments = curr.comments.filter(Boolean);
       rest.reactions = curr.reactions.filter(Boolean);
-      rest.files = curr.files.filter(Boolean);
       prev.result.push(rest);
       return prev;
     }, {result: [], total: 0});

@@ -1,3 +1,4 @@
+import { Opinion } from './../../entity/opinion.entity';
 import { SpecialDay } from './../../entity/special_day.entity';
 import { OpenDay } from './../../entity/open_day.entity';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
@@ -17,13 +18,26 @@ export class IcecreamShopsService {
 
   constructor(private readonly connection: Connection) {}
 
-  async getIcecreamShop(icecreamShopId: number, uType: number) {
+  async getIcecreamShop(icecreamShopId: number, uType: number, uId: number) {
     const icecreamShopRepositiory = this.connection.getRepository(IcecreamShop);
-    const response = await icecreamShopRepositiory.findOne({
-      where: {icecream_shop_id: icecreamShopId},
-      relations: ['followers', 'opinions', 'posts', 'flavours', 'flavours.hashtags', 'open_days', 'special_days'],
-    });
-    return { ...response, flavours: response.flavours.filter(flavour => UserType.client === uType ? flavour.status !== 3 : true ), followers: response.followers.length };
+    const opinionRepository = this.connection.getRepository(Opinion);
+    try {
+      const response = await icecreamShopRepositiory.findOne({
+        where: {icecream_shop_id: icecreamShopId},
+        relations: ['followers', 'flavours', 'flavours.hashtags', 'open_days', 'special_days'],
+      });
+      const rated = await opinionRepository.findOne({where: {user_id: uId, icecream_shop_id: icecreamShopId}});
+      console.log(rated);
+      return {
+        ...response,
+        flavours: response.flavours.filter(flavour => UserType.client === uType ? flavour.status !== 3 : true ),
+        followers: response.followers.length,
+        following: response.followers.some(follower => follower.user_id === uId),
+        rated: Boolean(rated),
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async createIcecreamShop(ownerId: number, userType: UserType, icecreamShopData: CreateIcecreamShopDto) {

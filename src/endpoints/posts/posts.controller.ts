@@ -7,7 +7,7 @@ import { UserType } from '../../enums/user-type.enum';
 import { ErrorType } from '../../enums/error-type.enum';
 import { EditPostDto } from './dto/edit-post.dto';
 import { RemovePostDto } from './dto/remove-post.dto';
-import { AddPostReactionDto } from './dto/add-post-reaction';
+import { AddPostReactionDto } from './dto/add-post-reaction.dto';
 import { RemovePostReactionDto } from './dto/remove-post-reaction.dto';
 
 @Controller('posts')

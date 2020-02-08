@@ -1,9 +1,11 @@
+import { OpinionView } from './../../entity/views/opinion_view.entity';
+import { ListOpinionsDto } from './dto/list-opinions.dto';
 import { Injectable, HttpException, HttpStatus, Param } from '@nestjs/common';
 import { Connection } from 'typeorm';
 import { UserType } from '../../enums/user-type.enum';
 import { AddOpinionDto } from './dto/add-opinion.dto';
 import { RemoveOpinionDto } from './dto/remove-opinion.dto';
-import { editOpinionDto } from './dto/edit-opinion.dto';
+import { EditOpinionDto } from './dto/edit-opinion.dto';
 import { AddOpinionCommentDto } from './dto/add-opinion-comment.dto';
 import { RemoveOpinionCommentDto } from './dto/remove-opinion-comment.dto';
 import { Opinion } from '../../entity/opinion.entity';
@@ -62,7 +64,7 @@ export class OpinionsService {
     }
   }
 
-  async editOpinion(userId: number, opinionData: editOpinionDto) {
+  async editOpinion(userId: number, opinionData: EditOpinionDto) {
     const { opinionId, content, grade } = opinionData;
     const opinionRepository = this.connection.getRepository(Opinion);
     const opinion = await opinionRepository.findOne({opinion_id: opinionId, user_id: userId});
@@ -112,6 +114,7 @@ export class OpinionsService {
     comment.content = content;
     comment.user_id = userId;
     comment.opinion_id = opinionId;
+    comment.created_at = new Date().toISOString();
     if ([UserType.manager, UserType.employee].includes(userType)) {
       comment.icecream_shop_id = opinion.icecream_shop_id;
     }
@@ -153,6 +156,27 @@ export class OpinionsService {
     }
     try {
       return await opinionCommentRepository.manager.remove(comment);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async listOpinions(filters: ListOpinionsDto) {
+    const opinionsRepository = this.connection.getRepository(OpinionView);
+    try {
+      const response = await opinionsRepository.query('SELECT COUNT(*) FROM opinion_view WHERE icecream_shop_id = $1', [filters.icecreamShopId]);
+      const total = response[0].count;
+      const result = await opinionsRepository.find(
+        {
+          where: { icecream_shop_id: filters.icecreamShopId },
+          take: filters.limit,
+          skip: filters.offset,
+          order: {
+            created_at: 'DESC',
+          },
+        },
+      );
+      return { total, result };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
