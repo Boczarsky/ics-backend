@@ -15,7 +15,7 @@ export class Employment {
   @JoinColumn({name: 'user_id'})
   employee: User;
 
-  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.employees)
+  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.employees, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'icecream_shop_id'})
   workplace: IcecreamShop;
 

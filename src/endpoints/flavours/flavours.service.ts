@@ -49,7 +49,7 @@ export class FlavoursService {
       if (flavour && hashtags && hashtags.length) {
         const hashtagsObjects = hashtags.map(hashtag => {
           const flavourHashtag = new FlavourHashtag();
-          flavourHashtag.hashtag = hashtag;
+          flavourHashtag.hashtag = hashtag.toLowerCase();
           flavourHashtag.icecream_flavour_id = flavour.icecream_flavour_id;
           return flavourHashtag;
         });

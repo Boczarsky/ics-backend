@@ -21,7 +21,7 @@ export class IcecreamFlavour {
   @Column()
   status: number;
 
-  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.flavours)
+  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.flavours, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'icecream_shop_id'})
   icecream_shop: IcecreamShop;
 

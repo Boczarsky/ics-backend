@@ -23,7 +23,7 @@ export class Post {
   @Column()
   title: string;
 
-  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.posts)
+  @ManyToOne(() => IcecreamShop, icecreamShop => icecreamShop.posts, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'icecream_shop_id'})
   icecream_shop: IcecreamShop;
 

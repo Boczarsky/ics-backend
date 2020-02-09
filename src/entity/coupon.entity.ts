@@ -17,11 +17,11 @@ export class Coupon {
   @Column()
   count: number;
 
-  @ManyToOne(() => Promotion, promotion => promotion.coupons)
+  @ManyToOne(() => Promotion, promotion => promotion.coupons, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'promotion_id'})
   promotion: Promotion;
 
-  @ManyToOne(() => User, user => user.coupons)
+  @ManyToOne(() => User, user => user.coupons, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'user_id'})
   user: User;
 

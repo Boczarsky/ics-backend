@@ -38,7 +38,7 @@ export class User {
   @Column({nullable: true})
   last_name: string;
 
-  @ManyToOne(() => User, manager => manager.employees)
+  @ManyToOne(() => User, manager => manager.employees, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'manager_id'})
   manager: User;
 

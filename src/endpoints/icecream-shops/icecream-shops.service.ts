@@ -27,7 +27,6 @@ export class IcecreamShopsService {
         relations: ['followers', 'flavours', 'flavours.hashtags', 'open_days', 'special_days'],
       });
       const rated = await opinionRepository.findOne({where: {user_id: uId, icecream_shop_id: icecreamShopId}});
-      console.log(rated);
       return {
         ...response,
         flavours: response.flavours.filter(flavour => UserType.client === uType ? flavour.status !== 3 : true ),
@@ -112,10 +111,10 @@ export class IcecreamShopsService {
       where.push(`owner_id = ${managerId}`);
     }
     if (name) {
-      where.push(`lower(name) LIKE '%${name}%'`);
+      where.push(`lower(name) LIKE '%${name.toLowerCase}%'`);
     }
     if (city) {
-      where.push(`lower(city) LIKE '%${city}%'`);
+      where.push(`lower(city) LIKE '%${city.toLowerCase()}%'`);
     }
     if (hashtags && hashtags.length) {
       const quoted = hashtags.map(hashtag => `'${hashtag}'`);
@@ -134,12 +133,12 @@ export class IcecreamShopsService {
       postal_code,
       logo_file_name,
       follows,
-      json_agg(hashtag) as "hashtags"
+      json_agg(DISTINCT jsonb_build_object('name', flavour_name, 'status', flavour_status)) as flavours
     FROM icecream_shop_search ${whereString}
     GROUP BY
       icecream_shop_id,
       owner_id,
-      name,
+      "name",
       city,
       street,
       postal_code,
@@ -189,7 +188,11 @@ export class IcecreamShopsService {
   }
 
   async editIcecreamShop(userId: number, userType: UserType, editData: EditIcecreamShopDto) {
-    const { name, city, street, postalCode, description, icecreamShopId, logoFileName, backgroundFileName, googleMapLink, openDays, specialDays } = editData;
+    const {
+      name, city, street, postalCode, description,
+      icecreamShopId, logoFileName, backgroundFileName,
+      googleMapLink, openDays, specialDays,
+    } = editData;
     const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
     const employmentRepository = this.connection.getRepository(Employment);
     const icecreamShop = await icecreamShopRepository.findOne({ icecream_shop_id: icecreamShopId });
@@ -265,6 +268,24 @@ export class IcecreamShopsService {
     }
   }
 
+  async deleteIcecreamShop(userId: number, userType: UserType, icecreamShopId: number) {
+    const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
+    let shop;
+    try {
+      shop = await icecreamShopRepository.findOne(icecreamShopId);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if (shop && shop.owner_id !== userId) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    try {
+      return await icecreamShopRepository.remove(shop);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async listFavoriteIcecreamShops(userId: number, filters: ListFavoriteIcecreamShopDto) {
     const { limit, offset } = filters;
     const query = `
@@ -276,7 +297,8 @@ export class IcecreamShopsService {
       "ics"."city",
       "ics"."street",
       "ics"."postal_code",
-      "ics"."logo_file_name"
+      "ics"."logo_file_name",
+      (select count(*) from follower flw where flw.icecream_shop_id = ics.icecream_shop_id) as follows
     FROM "follower" "f"
     LEFT JOIN "icecream_shop" "ics" ON "f"."icecream_shop_id" = "ics"."icecream_shop_id"
     WHERE "f"."user_id" = ${userId}

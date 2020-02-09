@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Request, HttpException, HttpStatus, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Request, HttpException, HttpStatus, Param } from '@nestjs/common';
 import { IcecreamShopsService } from './icecream-shops.service';
 import { CreateIcecreamShopDto } from './dto/create-icecream-shop.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -8,6 +8,7 @@ import { ListIcecreamShopsDto } from './dto/list-icecream-shops.dto';
 import { EditIcecreamShopDto } from './dto/edit-icecream-shop.dto';
 import { ListFavoriteIcecreamShopDto } from './dto/list-favorite-icecream-shop.dto';
 import { ToggleFavoriteDto } from './dto/toggle-favorite.dto';
+import { DeleteIcecreamShopDto } from './dto/delete-icecream-shop.dto';
 
 @Controller('icecream-shops')
 export class IcecreamShopsController {
@@ -66,6 +67,16 @@ export class IcecreamShopsController {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
     return await this.icecreamShopsService.editIcecreamShop(+user_id, user_type, editData);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('delete')
+  async deleteIcecreamShop(@Request() req, @Body() deleteData: DeleteIcecreamShopDto) {
+    const { user_type, user_id } = req.user.userData;
+    if ([UserType.client, UserType.guest].includes(user_type)) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.icecreamShopsService.deleteIcecreamShop(+user_id, user_type, deleteData.icecreamShopId);
   }
 
   @UseGuards(AuthGuard('jwt'))

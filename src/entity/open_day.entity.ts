@@ -22,7 +22,7 @@ export class OpenDay {
   @Column()
   hour_to: string;
 
-  @ManyToOne(() => IcecreamShop, is => is.open_days)
+  @ManyToOne(() => IcecreamShop, is => is.open_days, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'icecream_shop_id'})
   icecream_shop: IcecreamShop;
 

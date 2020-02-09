@@ -29,7 +29,7 @@ export class Promotion {
   @OneToMany(() => Coupon, coupon => coupon.promotion)
   coupons: Coupon[];
 
-  @ManyToOne(() => User, user => user.promotions)
+  @ManyToOne(() => User, user => user.promotions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'user_id'})
   user: User;
 }

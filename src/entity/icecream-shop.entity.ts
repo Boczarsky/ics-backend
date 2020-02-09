@@ -48,7 +48,7 @@ export class IcecreamShop {
   @OneToMany(() => SpecialDay, od => od.icecream_shop)
   special_days: SpecialDay[];
 
-  @ManyToOne(() => User, user => user.icecream_shops)
+  @ManyToOne(() => User, user => user.icecream_shops, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'owner_id'})
   owner: User;
 
