@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, ManyToOn
 import { Coupon } from './coupon.entity';
 import { IcecreamShop } from './icecream-shop.entity';
 import { User } from './user.entity';
+import { PromotionShop } from './promotion_shop.entity';
 
 @Entity()
 export class Promotion {
@@ -26,8 +27,8 @@ export class Promotion {
   @Column()
   end_date: string;
 
-  @OneToMany(() => Coupon, coupon => coupon.promotion)
-  coupons: Coupon[];
+  @OneToMany(() => PromotionShop, promotionShop => promotionShop.promotion)
+  assigned_shops: PromotionShop[];
 
   @ManyToOne(() => User, user => user.promotions, {onDelete: 'CASCADE'})
   @JoinColumn({name: 'user_id'})

@@ -71,15 +71,15 @@ export class PromotionsService {
       where: {
         coupon_id: couponId,
       },
-      relations: ['promotion'],
+      relations: ['promotion_shop', 'promotion_shop.promotion'],
     });
     if (!coupon) {
       throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
     }
-    if (coupon.promotion.user_id !== managerId) {
+    if (coupon.promotion_shop.promotion.user_id !== managerId) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
-    if (coupon.count < coupon.promotion.limit) {
+    if (coupon.count < coupon.promotion_shop.promotion.limit) {
       coupon.count += 1;
       try {
         return await couponRepository.manager.save(coupon);
@@ -111,10 +111,10 @@ export class PromotionsService {
     if (!coupon) {
       throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
     }
-    if (coupon.promotion.user_id !== managerId) {
+    if (coupon.promotion_shop.promotion.user_id !== managerId) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
-    if (coupon.count === coupon.promotion.limit) {
+    if (coupon.count === coupon.promotion_shop.promotion.limit) {
       try {
         return await couponRepository.manager.remove(coupon);
       } catch (error) {

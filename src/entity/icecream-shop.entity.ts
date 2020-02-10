@@ -8,6 +8,7 @@ import { Opinion } from './opinion.entity';
 import { OpinionComment } from './opinion_comment.entity';
 import { OpenDay } from './open_day.entity';
 import { SpecialDay } from './special_day.entity';
+import { PromotionShop } from './promotion_shop.entity';
 
 @Entity()
 export class IcecreamShop {
@@ -69,5 +70,8 @@ export class IcecreamShop {
 
   @OneToMany(() => OpinionComment, opinionResponse => opinionResponse.icecream_shop)
   opinion_responses: OpinionComment[];
+
+  @OneToMany(() => PromotionShop, promotionShop => promotionShop.icecream_shop)
+  promotions: PromotionShop[];
 
 }
