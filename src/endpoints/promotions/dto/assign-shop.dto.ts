@@ -1,6 +1,9 @@
 import { IsNumber } from 'class-validator';
 
-export class ListPromotionsDto {
+export class AssignShopDto {
+
+  @IsNumber()
+  promotionId: number;
 
   @IsNumber()
   icecreamShopId: number;

@@ -1,3 +1,4 @@
+import { IcecreamShop } from './../../entity/icecream-shop.entity';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Connection } from 'typeorm';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
@@ -8,6 +9,9 @@ import { CreateCouponDto } from './dto/create-coupon.dto';
 import { Coupon } from '../../entity/coupon.entity';
 import { CouponRewardDto } from './dto/coupon-reward.dto';
 import { ReedemCouponDto } from './dto/redeem-coupon.dto';
+import { AssignShopDto } from './dto/assign-shop.dto';
+import { PromotionShop } from '../../entity/promotion_shop.entity';
+import { ManagerPromotionList } from '../../entity/views/manager_promotion_list.entity';
 
 @Injectable()
 export class PromotionsService {
@@ -47,16 +51,25 @@ export class PromotionsService {
 
   async createCoupon(userId: number, promotionData: CreateCouponDto) {
     const { promotionId } = promotionData;
-    const promotionRepository = this.connection.getRepository(Promotion);
-    const promotion = await promotionRepository.findOne({promotion_id: promotionId});
+    const promotionShopRepository = this.connection.getRepository(PromotionShop);
+    const promotion = await promotionShopRepository.findOne({where: {promotion_shop_id: promotionId}, relations: ['promotion']});
     if (!promotion) {
       throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
     }
+    const couponRepository = this.connection.getRepository(Coupon);
+    let alreadyTaken;
+    try {
+      alreadyTaken = await couponRepository.find({where: {promotion_shop_id: promotionId}});
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if (alreadyTaken && alreadyTaken.some(taken => taken.count !== promotion.promotion.limit)) {
+      throw new HttpException(ErrorType.alreadyExist, HttpStatus.BAD_REQUEST);
+    }
     const coupon = new Coupon();
     coupon.user_id = userId;
-    coupon.promotion_id = promotionId;
+    coupon.promotion_shop_id = promotionId;
     coupon.count = 0;
-    const couponRepository = this.connection.getRepository(Coupon);
     try {
       return await couponRepository.manager.save(coupon);
     } catch (error) {
@@ -83,16 +96,6 @@ export class PromotionsService {
       coupon.count += 1;
       try {
         return await couponRepository.manager.save(coupon);
-      } catch (error) {
-        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-    } else {
-      const newCoupon = new Coupon();
-      newCoupon.count = 1;
-      newCoupon.promotion_id = coupon.promotion_id;
-      newCoupon.user_id = coupon.user_id;
-      try {
-        return await couponRepository.manager.save(newCoupon);
       } catch (error) {
         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       }
@@ -126,13 +129,43 @@ export class PromotionsService {
   }
 
   async listPromotions(managerId: number) {
-    const promotionRepository = this.connection.getRepository(Promotion);
-    return await promotionRepository.find({user_id: managerId});
+    const promotionRepository = this.connection.getRepository(ManagerPromotionList);
+    return await promotionRepository.find({where: {user_id: managerId}});
   }
 
   async listCoupons(userId: number) {
     const couponRepository = this.connection.getRepository(Coupon);
     return await couponRepository.find({where: {user_id: userId}, relations: ['promotion']});
+  }
+
+  async listShopsToAssign(userId: number) {
+    const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
+    return await icecreamShopRepository.find({where: { owner_id: userId }, select: ['name', 'icecream_shop_id']});
+  }
+
+  async assignShop(data: AssignShopDto) {
+    const promotionShopRepository = this.connection.getRepository(PromotionShop);
+    const promotionShop = new PromotionShop();
+    promotionShop.icecream_shop_id = data.icecreamShopId;
+    promotionShop.promotion_id = data.promotionId;
+    try {
+      return await promotionShopRepository.manager.save(promotionShop);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async unassignShop(data: AssignShopDto) {
+    const promotionShopRepository = this.connection.getRepository(PromotionShop);
+    const assignedShop = await promotionShopRepository.findOne({icecream_shop_id: data.icecreamShopId, promotion_id: data.promotionId});
+    if (!assignedShop) {
+      throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
+    }
+    try {
+      return await promotionShopRepository.manager.remove(assignedShop);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
 }

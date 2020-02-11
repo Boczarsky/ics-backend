@@ -24,7 +24,7 @@ export class IcecreamShopsService {
     try {
       const response = await icecreamShopRepositiory.findOne({
         where: {icecream_shop_id: icecreamShopId},
-        relations: ['followers', 'flavours', 'flavours.hashtags', 'open_days', 'special_days'],
+        relations: ['followers', 'flavours', 'flavours.hashtags', 'open_days', 'special_days', 'promotions', 'promotions.promotion'],
       });
       const rated = await opinionRepository.findOne({where: {user_id: uId, icecream_shop_id: icecreamShopId}});
       return {

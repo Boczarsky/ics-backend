@@ -9,7 +9,7 @@ export class Coupon {
   coupon_id: number;
 
   @Column()
-  promotion_id: number;
+  promotion_shop_id: number;
 
   @Column()
   user_id: number;
@@ -18,7 +18,7 @@ export class Coupon {
   count: number;
 
   @ManyToOne(() => PromotionShop, promotionShop => promotionShop.coupons, {onDelete: 'CASCADE'})
-  @JoinColumn({name: 'promotion_id'})
+  @JoinColumn({name: 'promotion_shop_id'})
   promotion_shop: PromotionShop;
 
   @ManyToOne(() => User, user => user.coupons, {onDelete: 'CASCADE'})

@@ -1,15 +1,18 @@
 import { Coupon } from './coupon.entity';
 import { Promotion } from './promotion.entity';
-import { Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { IcecreamShop } from './icecream-shop.entity';
 
 @Entity()
 export class PromotionShop {
 
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
+  promotion_shop_id: number;
+
+  @Column()
   promotion_id: number;
 
-  @PrimaryColumn()
+  @Column()
   icecream_shop_id: number;
 
   @ManyToOne(() => Promotion, promotion => promotion.assigned_shops, {onDelete: 'CASCADE'})

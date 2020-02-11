@@ -9,6 +9,7 @@ import { CouponRewardDto } from './dto/coupon-reward.dto';
 import { ListPromotionsDto } from './dto/list-promotions.dto';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { ReedemCouponDto } from './dto/redeem-coupon.dto';
+import { AssignShopDto } from './dto/assign-shop.dto';
 
 @Controller('promotions')
 export class PromotionsController {
@@ -78,6 +79,36 @@ export class PromotionsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('shopsToAssign')
+  async listShopsToAssign(@Request() req) {
+    const { user_type, user_id } = req.user.userData;
+    if (user_type !== UserType.manager) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.promotionsService.listShopsToAssign(+user_id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('assignShop')
+  async assignShop(@Request() req, @Body() assignShopData: AssignShopDto) {
+    const { user_type } = req.user.userData;
+    if (user_type !== UserType.manager) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.promotionsService.assignShop(assignShopData);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('unassignShop')
+  async unassignShop(@Request() req, @Body() unassignShopData: AssignShopDto) {
+    const { user_type } = req.user.userData;
+    if (user_type !== UserType.manager) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.promotionsService.unassignShop(unassignShopData);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('coupon/list')
   async listCoupons(@Request() req) {
     const { user_type, user_id } = req.user.userData;
@@ -90,7 +121,7 @@ export class PromotionsController {
   @UseGuards(AuthGuard('jwt'))
   @Post('view')
   async getPromotions(@Body() filters: ListPromotionsDto) {
-    return await this.promotionsService.listPromotions(filters.managerId);
+    return await this.promotionsService.listPromotions(filters.icecreamShopId);
   }
 
 }
