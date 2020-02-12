@@ -1,3 +1,5 @@
+import { Employment } from './../../entity/employment.entity';
+import { UserType } from './../../enums/user-type.enum';
 import { IcecreamShop } from './../../entity/icecream-shop.entity';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Connection } from 'typeorm';
@@ -8,7 +10,7 @@ import { ErrorType } from '../../enums/error-type.enum';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { Coupon } from '../../entity/coupon.entity';
 import { CouponRewardDto } from './dto/coupon-reward.dto';
-import { ReedemCouponDto } from './dto/redeem-coupon.dto';
+import { RedeemCouponDto } from './dto/redeem-coupon.dto';
 import { AssignShopDto } from './dto/assign-shop.dto';
 import { PromotionShop } from '../../entity/promotion_shop.entity';
 import { ManagerPromotionList } from '../../entity/views/manager_promotion_list.entity';
@@ -77,7 +79,7 @@ export class PromotionsService {
     }
   }
 
-  async couponReward(managerId: number, couponData: CouponRewardDto) {
+  async couponReward(userId: number, userType: number, couponData: CouponRewardDto) {
     const { couponId } = couponData;
     const couponRepository = this.connection.getRepository(Coupon);
     const coupon = await couponRepository.findOne({
@@ -89,8 +91,15 @@ export class PromotionsService {
     if (!coupon) {
       throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
     }
-    if (coupon.promotion_shop.promotion.user_id !== managerId) {
+    if (userType === UserType.manager && coupon.promotion_shop.promotion.user_id !== userId) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    if (userType === UserType.employee) {
+      const employmentRepository = this.connection.getRepository(Employment);
+      const employee = await employmentRepository.findOne({user_id: userId, icecream_shop_id: coupon.promotion_shop.icecream_shop_id});
+      if (!employee) {
+        throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+      }
     }
     if (coupon.count < coupon.promotion_shop.promotion.limit) {
       coupon.count += 1;
@@ -99,23 +108,32 @@ export class PromotionsService {
       } catch (error) {
         throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       }
+    } else {
+      throw new HttpException(ErrorType.requirementsNotMet, HttpStatus.BAD_REQUEST);
     }
   }
 
-  async reedemCoupon(managerId: number, couponData: ReedemCouponDto) {
+  async redeemCoupon(userId: number, userType: number, couponData: RedeemCouponDto) {
     const { couponId } = couponData;
     const couponRepository = this.connection.getRepository(Coupon);
     const coupon = await couponRepository.findOne({
       where: {
         coupon_id: couponId,
       },
-      relations: ['promotion'],
+      relations: ['promotion_shop', 'promotion_shop.promotion'],
     });
     if (!coupon) {
       throw new HttpException(ErrorType.notFound, HttpStatus.NOT_FOUND);
     }
-    if (coupon.promotion_shop.promotion.user_id !== managerId) {
+    if (userType === UserType.manager && coupon.promotion_shop.promotion.user_id !== userId) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    if (userType === UserType.employee) {
+      const employmentRepository = this.connection.getRepository(Employment);
+      const employee = await employmentRepository.findOne({user_id: userId, icecream_shop_id: coupon.promotion_shop.icecream_shop_id});
+      if (!employee) {
+        throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+      }
     }
     if (coupon.count === coupon.promotion_shop.promotion.limit) {
       try {
@@ -135,7 +153,25 @@ export class PromotionsService {
 
   async listCoupons(userId: number) {
     const couponRepository = this.connection.getRepository(Coupon);
-    return await couponRepository.find({where: {user_id: userId}, relations: ['promotion']});
+    const result = await couponRepository.find({where: {user_id: userId}, relations: ['promotion_shop', 'promotion_shop.icecream_shop', 'promotion_shop.promotion']});
+    return result.map(coupon => ({
+      icecream_shop: {
+        logo_file_name: coupon.promotion_shop.icecream_shop.logo_file_name,
+        name: coupon.promotion_shop.icecream_shop.name,
+        city: coupon.promotion_shop.icecream_shop.city,
+        street: coupon.promotion_shop.icecream_shop.street,
+        postal_code: coupon.promotion_shop.icecream_shop.postal_code,
+      },
+      coupon: {
+        id: coupon.coupon_id,
+        prize: coupon.promotion_shop.promotion.prize,
+        info: coupon.promotion_shop.promotion.info,
+        limit: coupon.promotion_shop.promotion.limit,
+        count: coupon.count,
+        start_date: coupon.promotion_shop.promotion.start_date,
+        end_date: coupon.promotion_shop.promotion.end_date,
+      },
+    }));
   }
 
   async listShopsToAssign(userId: number) {

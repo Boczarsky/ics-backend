@@ -8,7 +8,7 @@ import { RemovePromotionDto } from './dto/remove-promotion.dto';
 import { CouponRewardDto } from './dto/coupon-reward.dto';
 import { ListPromotionsDto } from './dto/list-promotions.dto';
 import { CreateCouponDto } from './dto/create-coupon.dto';
-import { ReedemCouponDto } from './dto/redeem-coupon.dto';
+import { RedeemCouponDto } from './dto/redeem-coupon.dto';
 import { AssignShopDto } from './dto/assign-shop.dto';
 
 @Controller('promotions')
@@ -39,23 +39,21 @@ export class PromotionsController {
   @UseGuards(AuthGuard('jwt'))
   @Post('coupon/reward')
   async couponReward(@Request() req, @Body() couponData: CouponRewardDto) {
-    const { user_type, user_id, manager_id } = req.user.userData;
+    const { user_type, user_id } = req.user.userData;
     if (![UserType.manager, UserType.employee].includes(user_type)) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
-    const userId = user_type === UserType.manager ? +user_id : +manager_id;
-    return await this.promotionsService.couponReward(userId, couponData);
+    return await this.promotionsService.couponReward(+user_id, +user_type, couponData);
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('coupon/reedem')
-  async couponRedeem(@Request() req, @Body() couponData: ReedemCouponDto) {
-    const { user_type, user_id, manager_id } = req.user.userData;
+  @Post('coupon/redeem')
+  async couponRedeem(@Request() req, @Body() couponData: RedeemCouponDto) {
+    const { user_type, user_id } = req.user.userData;
     if (![UserType.manager, UserType.employee].includes(user_type)) {
       throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
     }
-    const userId = user_type === UserType.manager ? +user_id : +manager_id;
-    return await this.promotionsService.reedemCoupon(userId, couponData);
+    return await this.promotionsService.redeemCoupon(+user_id, +user_type, couponData);
   }
 
   @UseGuards(AuthGuard('jwt'))

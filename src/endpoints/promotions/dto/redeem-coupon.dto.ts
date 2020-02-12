@@ -1,6 +1,6 @@
 import { IsNumber } from 'class-validator';
 
-export class ReedemCouponDto {
+export class RedeemCouponDto {
 
   @IsNumber()
   couponId: number;
