@@ -1,3 +1,4 @@
+import { NewsFeedDto } from './dto/news-feed.dto';
 import { Controller, UseGuards, Post, Body, Request, HttpException, HttpStatus } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -19,6 +20,16 @@ export class PostsController {
   @Post('list')
   async listPosts(@Body() filters: ListPostsDto) {
     return await this.postsService.listPosts(filters);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('newsFeed')
+  async getNewsFeed(@Body() filters: NewsFeedDto, @Request() req) {
+    const { user_id, user_type } = req.user.userData;
+    if (user_type !== UserType.client) {
+      throw new HttpException(ErrorType.accessDenied, HttpStatus.UNAUTHORIZED);
+    }
+    return await this.postsService.getNewsFeed(Number(user_id), filters);
   }
 
   @UseGuards(AuthGuard('jwt'))

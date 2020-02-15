@@ -199,12 +199,8 @@ export class UsersService {
         throw new HttpException(ErrorType.passwordMatchFailed, HttpStatus.BAD_REQUEST);
       }
     }
-    if (firstName) {
-      user.first_name = firstName;
-    }
-    if (lastName) {
-      user.last_name = lastName;
-    }
+    user.first_name = firstName;
+    user.last_name = lastName;
     if (avatar) {
       user.avatar_file_name = avatar;
     }

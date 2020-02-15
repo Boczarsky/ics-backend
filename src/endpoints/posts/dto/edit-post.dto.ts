@@ -7,6 +7,10 @@ export class EditPostDto {
 
   @IsOptional()
   @IsNotEmpty()
+  title: string;
+
+  @IsOptional()
+  @IsNotEmpty()
   content: string;
 
   @IsOptional()

@@ -1,3 +1,5 @@
+import { NewsFeedDto } from './dto/news-feed.dto';
+import { Follower } from './../../entity/follower.entity';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Connection, In } from 'typeorm';
 import { UserType } from '../../enums/user-type.enum';
@@ -55,7 +57,7 @@ export class PostsService {
   }
 
   async editPost(userId: number, userType: UserType, postData: EditPostDto) {
-    const { postId, content, fileName } = postData;
+    const { postId, content, fileName, title } = postData;
     const postRepository = this.connection.getRepository(Post);
     const post = await postRepository.findOne({post_id: postId});
     if (!post) {
@@ -66,7 +68,11 @@ export class PostsService {
     if (content) {
       post.content = content;
     }
+    if (title) {
+      post.title = title;
+    }
     try {
+      delete post.reactions;
       return await postRepository.manager.save(post);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -129,6 +135,9 @@ export class PostsService {
       "content",
       "created_at",
       "logo_file_name",
+      "city",
+      "street",
+      "postal_code",
       json_agg(
         CASE WHEN "reaction_to" IS null THEN null
         ELSE json_build_object(
@@ -148,7 +157,11 @@ export class PostsService {
       logo_file_name,
       file_name,
       title,
-      icecream_shop_id
+      icecream_shop_id,
+      "city",
+      "street",
+      "postal_code"
+    ORDER BY created_at DESC
     LIMIT ${limit}
     OFFSET ${offset}
     `;
@@ -162,6 +175,22 @@ export class PostsService {
       prev.result.push(rest);
       return prev;
     }, {result: [], total: 0});
+  }
+
+  async getNewsFeed(userId: number, filters: NewsFeedDto) {
+    const followerRepository = this.connection.getRepository(Follower);
+    let favoriteShops;
+    try {
+      favoriteShops = await followerRepository.find(
+        {
+          select: ['icecream_shop_id'],
+          where: { user_id: userId },
+        },
+      );
+      return this.listPosts({...filters, icecreamShops: favoriteShops.map(fs => fs.icecream_shop_id)});
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
 }

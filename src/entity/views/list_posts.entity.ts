@@ -8,6 +8,9 @@ SELECT
  "ics"."icecream_shop_id",
  "ics"."name",
  "ics"."logo_file_name",
+ "ics"."postal_code",
+ "ics"."street",
+ "ics"."city",
  "pr"."user_id" as "reaction_author",
  "pr"."reaction_type",
  "pr"."post_id" as "reaction_to",
@@ -51,5 +54,14 @@ export class ListPost {
 
   @ViewColumn()
   title: string;
+
+  @ViewColumn()
+  city: string;
+
+  @ViewColumn()
+  street: string;
+
+  @ViewColumn()
+  postal_code: string;
 
 }

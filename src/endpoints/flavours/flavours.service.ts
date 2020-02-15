@@ -83,6 +83,7 @@ export class FlavoursService {
     try {
       const archivalHashtags = [...editedFlavour.hashtags];
       delete editedFlavour.hashtags;
+      delete editedFlavour.reactions;
       const flavour = await icecreamFlavourRepository.manager.save(editedFlavour); // Error caused by hashtags from relations
       if (flavour && hashtags && hashtags.length) {
         const hashtagsObjects = hashtags.map(hashtag => {
