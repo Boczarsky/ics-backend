@@ -5,7 +5,7 @@ import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 't
 export class SpecialDay {
 
   @PrimaryGeneratedColumn()
-  open_day_id: number;
+  special_day_id: number;
 
   @Column()
   icecream_shop_id: number;
