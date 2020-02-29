@@ -11,7 +11,6 @@ import { OpinionsModule } from './endpoints/opinions/opinions.module';
 import { PostsModule } from './endpoints/posts/posts.module';
 import { PromotionsModule } from './endpoints/promotions/promotions.module';
 import { FilesModule } from './endpoints/files/files.module';
-import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [

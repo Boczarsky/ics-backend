@@ -54,6 +54,8 @@ export class AuthService {
       throw new HttpException('EmailExist', HttpStatus.FORBIDDEN);
     }
     const newUser = new User();
+    newUser.first_name = registerData.firstName;
+    newUser.last_name = registerData.lastName;
     newUser.user_type = registerData.userType;
     newUser.password = this.passwordHelper.hash(registerData.password);
     newUser.login = registerData.login;

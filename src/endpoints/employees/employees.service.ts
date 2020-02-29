@@ -78,7 +78,7 @@ export class EmployeesService {
   async getShopsToAssign(managerId: number) {
     const icecreamShopsRepositiory = this.connection.getRepository(IcecreamShop);
     return await icecreamShopsRepositiory.find({
-      select: ['icecream_shop_id', 'name'],
+      select: ['icecream_shop_id', 'name', 'city', 'street'],
       where: {
         owner_id: managerId,
       },

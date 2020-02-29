@@ -9,7 +9,7 @@ import { ViewEntity, ViewColumn } from 'typeorm';
 	pr.start_date,
 	pr.end_date,
 	array_to_json(array(
-		select json_build_object('value', ps.icecream_shop_id, 'name', ics.name) from promotion_shop ps
+		select json_build_object('value', ps.icecream_shop_id, 'name', ics.name, 'street', ics.street, 'city', ics.city) from promotion_shop ps
 		left join icecream_shop ics on ics.icecream_shop_id = ps.icecream_shop_id
 		where ps.promotion_id = pr.promotion_id
 	)) as assigned_shops

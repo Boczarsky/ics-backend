@@ -13,6 +13,14 @@ export class RegisterDto {
   @IsNotEmpty()
   password: string;
 
+  @ValidateIf(o => o.userType === UserType.manager)
+  @IsNotEmpty()
+  firstName: string;
+
+  @ValidateIf(o => o.userType === UserType.manager)
+  @IsNotEmpty()
+  lastName: string;
+
   @IsEnum(UserType)
   @IsNotIn([UserType.guest, UserType.employee])
   userType: UserType;

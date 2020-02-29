@@ -10,7 +10,7 @@ SELECT
   "u"."last_name",
   concat("u"."first_name", ' ', "u"."last_name") as full_name,
   "e"."icecream_shop_id" as "workplace_id",
-  "is"."name" as "workplace_name"
+  CASE WHEN "is"."name" is not null THEN concat("is"."name", ' - ', "is"."city", ', ', "is"."street") ELSE null END as "workplace_name"
 FROM "user" "u"
 LEFT JOIN "employment" "e" ON "u"."user_id" = "e"."user_id"
 LEFT JOIN "icecream_shop" "is" ON "e"."icecream_shop_id" = "is"."icecream_shop_id"

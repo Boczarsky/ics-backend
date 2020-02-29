@@ -1,3 +1,4 @@
+import { Length } from 'class-validator';
 import { NewsFeedDto } from './dto/news-feed.dto';
 import { Follower } from './../../entity/follower.entity';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
@@ -187,6 +188,9 @@ export class PostsService {
           where: { user_id: userId },
         },
       );
+      if (!favoriteShops.length) {
+        return {result: [], total: 0};
+      }
       return this.listPosts({...filters, icecreamShops: favoriteShops.map(fs => fs.icecream_shop_id)});
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

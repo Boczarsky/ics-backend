@@ -176,7 +176,7 @@ export class PromotionsService {
 
   async listShopsToAssign(userId: number) {
     const icecreamShopRepository = this.connection.getRepository(IcecreamShop);
-    return await icecreamShopRepository.find({where: { owner_id: userId }, select: ['name', 'icecream_shop_id']});
+    return await icecreamShopRepository.find({where: { owner_id: userId }, select: ['name', 'icecream_shop_id', 'street', 'city']});
   }
 
   async assignShop(data: AssignShopDto) {
