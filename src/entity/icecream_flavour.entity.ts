@@ -12,6 +12,9 @@ export class IcecreamFlavour {
   @Column()
   icecream_shop_id: number;
 
+  @Column({nullable: true})
+  file_name: string;
+
   @Column()
   name: string;
 

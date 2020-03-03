@@ -25,4 +25,7 @@ export class EditFlavourDto {
   @IsArray()
   hashtags: string[];
 
+  @IsOptional()
+  fileName: string;
+
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEnum, IsNumber, IsArray } from 'class-validator';
+import { IsNotEmpty, IsEnum, IsNumber, IsArray, IsOptional, IsString } from 'class-validator';
 import { FlavourStatus } from '../../../enums/flavour-status.enum';
 
 export class AddFlavourDto {
@@ -17,5 +17,8 @@ export class AddFlavourDto {
 
   @IsArray()
   hashtags: string[];
+
+  @IsOptional()
+  fileName: string;
 
 }

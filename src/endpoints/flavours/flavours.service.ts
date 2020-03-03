@@ -36,13 +36,16 @@ export class FlavoursService {
   }
 
   async addFlavour(userId: number, userType: number, flavourData: AddFlavourDto) {
-    const {icecreamShopId, name, composition, status, hashtags } = flavourData;
+    const {icecreamShopId, name, composition, status, hashtags, fileName } = flavourData;
     this.checkPermissions(userType, userId, icecreamShopId);
     const newFlavour = new IcecreamFlavour();
     newFlavour.icecream_shop_id = icecreamShopId;
     newFlavour.name = name;
     newFlavour.composition = composition;
     newFlavour.status = status;
+    if (fileName !== undefined) {
+      newFlavour.file_name = fileName;
+    }
     const icecreamFlavourRepository = this.connection.getRepository(IcecreamFlavour);
     try {
       const flavour = await icecreamFlavourRepository.manager.save(newFlavour);
@@ -64,7 +67,7 @@ export class FlavoursService {
   }
 
   async editFlavour(userId: number, userType: number, flavourData: EditFlavourDto) {
-    const {icecreamShopId, name, composition, status, hashtags, flavourId } = flavourData;
+    const {icecreamShopId, name, composition, status, hashtags, flavourId, fileName } = flavourData;
     this.checkPermissions(userType, userId, icecreamShopId);
     const icecreamFlavourRepository = this.connection.getRepository(IcecreamFlavour);
     const editedFlavour = await icecreamFlavourRepository.findOne({icecream_flavour_id: flavourId, icecream_shop_id: icecreamShopId});
@@ -79,6 +82,9 @@ export class FlavoursService {
     }
     if (status) {
       editedFlavour.status = status;
+    }
+    if (fileName !== undefined) {
+      editedFlavour.file_name = fileName;
     }
     try {
       const archivalHashtags = [...editedFlavour.hashtags];
